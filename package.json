@@ -4,7 +4,7 @@
   "description": "d3-react-typescript monitoring template",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --config ./webpack.config.dev --hot --inline --colors --open --port 9000",
+    "start": "webpack-dev-server --config ./webpack.config --hot --inline --colors --open",
     "build": "webpack --mode development"
   },
   "repository": {

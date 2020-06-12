@@ -5,16 +5,16 @@ const path = require('path');
 
 module.exports = (env, options) => {
     const config = {
-        entry: './app/app.js',
+        entry: './app/app.ts',
         output : {
             filename : 'bundle.js',
             path : path.resolve(__dirname, './wwwroot'),
             publicPath : "/"
         },
-        mode : "developmenet",
+        mode : "development",
         devtool: 'source-map',
         devServer: {
-            contentBase: path.resolve(__dirname, './'),
+            contentBase: path.resolve(__dirname, './wwwroot'),
             publicPath: path.resolve(__dirname, '/wwwroot/'),
             hot: true,
             port : 9898
