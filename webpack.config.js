@@ -17,7 +17,7 @@ module.exports = (env, options) => {
             contentBase: path.resolve(__dirname, './wwwroot'),
             publicPath: path.resolve(__dirname, '/wwwroot/'),
             hot: true,
-            port : 9898
+            port : 9898,
         },
         module: {
             rules: [
