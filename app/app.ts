@@ -11,26 +11,38 @@ import { ChartOption } from "./monitor/models/chartOption";
 class Main {
     private wrapperElement : HTMLDivElement;
     private drawChartManager : DrawChartManager;
+    private svgElement : any;
 
     public init(parentElement : HTMLDivElement, width : number, height : number): void {
         this.wrapperElement = parentElement;
         this.drawChartManager = new DrawChartManager(parentElement, width, height);
-        this.drawChartManager.init();
+        this.svgElement = d3.select(this.wrapperElement[0])
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+    }
+
+    public clear() {
+        this.drawChartManager.clear(this.svgElement);
     }
     
-    public drawChart(chartType : ChartType, monitorDimensition : MonitorDimensition) : void {
-        let chartOption = new ChartOption();
-        //chartOption.lineColor = "#af9358";
-        chartOption.lineColor = "rgb(255,0,0)";
-        this.drawChartManager.addChart(chartType,this.dataGenerator(), monitorDimensition, chartOption);
+    public drawChart(chartType : ChartType, monitorDimensition : MonitorDimensition, chartOption : ChartOption) : void {
+        
+        //this.drawChartManager.addChart(chartType,this.dataGenerator(), monitorDimensition, chartOption);
+        let chart = this.drawChartManager.drawChart(this.svgElement,chartType,monitorDimensition, chartOption);
+        d3.select(this.svgElement).datum(this.dataGenerator()).call(chart);
     }
 
     public drawLineChart(monitorDimensition : MonitorDimensition){
-        this.drawChart(ChartType.Line, monitorDimensition);
+        let chartOption = new ChartOption();
+        chartOption.lineColor = "darkred";
+        this.drawChart(ChartType.Line, monitorDimensition, chartOption);
     }
 
-    public drawCurveLineChart() {
-        //this.drawChart(ChartType.CurveLine);
+    public drawCurveLineChart(monitorDimensition : MonitorDimensition) {
+        let chartOption = new ChartOption();
+        chartOption.lineColor = "darkblue";
+        this.drawChart(ChartType.CurveLine, monitorDimensition, chartOption);
     }
 
     public dataGenerator() : Array<ChartData> {
