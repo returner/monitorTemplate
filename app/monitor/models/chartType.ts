@@ -4,5 +4,6 @@ export enum ChartType {
     CurveLine,
     Scatter,
     Gauge,
-    Number
+    Number,
+    LinearGauge
 }

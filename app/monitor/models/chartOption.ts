@@ -1,6 +1,7 @@
 export class ChartOption {
-    public lineColor : string;
+    public valueColorCode : string;
     public isShowXAsix : boolean;
     public isShowYAsix : boolean;
-    
+    public rangeMinValue : number = 0;
+    public rangeMaxValue : number = 100;
 }

@@ -92,10 +92,10 @@ export class MonitorJsInterop {
         
         console.log(`(${id})receive:`, lineData.colorValue, lineData.monitorValue);
 
-        currentItem.monitorDatas.push(lineData)
-        if (currentItem.monitorDatas.length > 30)
-            currentItem.monitorDatas.shift();
-        d3.select(currentItem.element).call(currentItem.d3DrawObject);
+        // currentItem.monitorDatas.push(lineData)
+        // if (currentItem.monitorDatas.length > 30)
+        //     currentItem.monitorDatas.shift();
+        // d3.select(currentItem.element).call(currentItem.d3DrawObject);
     }
 }
 

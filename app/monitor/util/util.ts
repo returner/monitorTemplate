@@ -3,3 +3,6 @@ export class Util {
         return Math.floor(Math.random() * max) + min;
     }
 }
+
+window["Util"] = Util;
+
