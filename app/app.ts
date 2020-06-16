@@ -52,7 +52,7 @@ class Main {
         chartOption.accessor = new Accessor();
         monitorObject.aasId = chartOption.aasId;
         monitorObject.monitorDatas = [];
-        monitorObject.element = this.chartManager.buildGroupWrapper(this.svgElement, monitorDimensition);
+        monitorObject.element = this.chartManager.buildGroupWrapper(this.svgElement, monitorObject.aasId, monitorDimensition);
 
         monitorObject.drawChartObject = this.chartManager.drawChart(monitorObject.element, chartOption, monitorDimensition);
         this.monitoringObjects.push(monitorObject);

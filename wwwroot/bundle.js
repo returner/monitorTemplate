@@ -160,7 +160,7 @@ var Main = /** @class */ (function () {
         chartOption.accessor = new accessor_1.Accessor();
         monitorObject.aasId = chartOption.aasId;
         monitorObject.monitorDatas = [];
-        monitorObject.element = this.chartManager.buildGroupWrapper(this.svgElement, monitorDimensition);
+        monitorObject.element = this.chartManager.buildGroupWrapper(this.svgElement, monitorObject.aasId, monitorDimensition);
         monitorObject.drawChartObject = this.chartManager.drawChart(monitorObject.element, chartOption, monitorDimensition);
         this.monitoringObjects.push(monitorObject);
         d3.select(monitorObject.element).datum(monitorObject.monitorDatas).call(monitorObject.drawChartObject);
@@ -222,6 +222,7 @@ var drawLineChart_1 = __webpack_require__(/*! ./drawLineChart */ "./app/monitor/
 var drawCurveLineChart_1 = __webpack_require__(/*! ./drawCurveLineChart */ "./app/monitor/drawCurveLineChart.ts");
 var drawLineGaugeChart_1 = __webpack_require__(/*! ./drawLineGaugeChart */ "./app/monitor/drawLineGaugeChart.ts");
 var drawScatterChart_1 = __webpack_require__(/*! ./drawScatterChart */ "./app/monitor/drawScatterChart.ts");
+var drawGaugeChart_1 = __webpack_require__(/*! ./drawGaugeChart */ "./app/monitor/drawGaugeChart.ts");
 var ChartManager = /** @class */ (function () {
     function ChartManager(wrapperElement, wrapperWidth, wrapperHeight) {
         this.wrapperElement = new wrapperElement_1.WrapperElement();
@@ -239,8 +240,10 @@ var ChartManager = /** @class */ (function () {
     ChartManager.prototype.clear = function (svgElement) {
         d3.selectAll(svgElement).remove();
     };
-    ChartManager.prototype.buildGroupWrapper = function (baseSvgElement, monitorDimensition) {
-        return baseSvgElement.append("g")
+    ChartManager.prototype.buildGroupWrapper = function (baseSvgElement, aasId, monitorDimensition) {
+        return baseSvgElement
+            .append("g")
+            .attr("aasId", aasId)
             .style("transform", "translate(" + monitorDimensition.left + "px, " + monitorDimensition.top + "px)");
     };
     ChartManager.prototype.drawChart = function (chartElement, chartOption, monitorDimensition) {
@@ -262,6 +265,8 @@ var ChartManager = /** @class */ (function () {
                 return scatterObj.drawScatterChart(chartElement, chartOption, monitorDimensition);
                 break;
             case chartType_1.ChartType.Gauge:
+                var gaugeObj = new drawGaugeChart_1.DrawGaugeChart();
+                return gaugeObj.drawGaugeChart(chartElement, chartOption, monitorDimensition);
                 break;
             case chartType_1.ChartType.Number:
                 break;
@@ -351,6 +356,143 @@ var DrawCurveLineChart = /** @class */ (function () {
     return DrawCurveLineChart;
 }());
 exports.DrawCurveLineChart = DrawCurveLineChart;
+
+
+/***/ }),
+
+/***/ "./app/monitor/drawGaugeChart.ts":
+/*!***************************************!*\
+  !*** ./app/monitor/drawGaugeChart.ts ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DrawGaugeChart = void 0;
+var d3 = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+var DrawGaugeChart = /** @class */ (function () {
+    function DrawGaugeChart() {
+    }
+    DrawGaugeChart.prototype.drawGaugeChart = function (groupElement, chartOption, monitorDimensition) {
+        var data = [0.4, 0.3, 0.3];
+        var colors = ["green", "orange", "red"];
+        var anglesRange = 0.5 * Math.PI;
+        var radis = Math.min(monitorDimensition.width, 2 * monitorDimensition.height) / 2;
+        var thickness = monitorDimensition.width * 0.17;
+        var gaugeDrawData = [
+            {
+                ratio: 0.4,
+                color: "green"
+            },
+            {
+                ratio: 0.3,
+                color: "orange"
+            },
+            {
+                ratio: 0.3,
+                color: "red"
+            }
+        ];
+        var pies = d3.pie()
+            .value(function (d) { return Number(d); })
+            .sort(null)
+            .startAngle(anglesRange * -1)
+            .endAngle(anglesRange);
+        var arc = d3.arc()
+            .outerRadius(radis)
+            .innerRadius(radis - thickness)
+            .cornerRadius(5);
+        groupElement.selectAll("path")
+            .data(pies(data))
+            .enter()
+            .append("path")
+            .attr("fill", function (d, i) { return colors[i]; })
+            .attr("d", arc);
+        var r = monitorDimensition.width / 2;
+        var pointerWidth = 10;
+        var pointerTailLength = 5;
+        var pointerHeadLengthPercent = 0.9;
+        var pointerHeadLength = Math.round(r * pointerHeadLengthPercent);
+        var lineData = [[pointerWidth / 2, 0],
+            [0, -pointerHeadLength],
+            [-(pointerWidth / 2), 0],
+            [0, pointerTailLength],
+            [pointerWidth / 2, 0]];
+        var angle = {
+            minAngle: -90,
+            maxAngle: 90
+        };
+        var pointerLine = d3.line().curve(d3.curveBasis);
+        var needle = groupElement
+            .append('g')
+            .data([lineData])
+            .attr('class', 'pointer')
+            .attr('transform', "translate(0,0)")
+            .append('path')
+            .attr('d', pointerLine)
+            .attr("fill", "navy")
+            .attr('transform', 'rotate(' + angle.minAngle + ')');
+        var ratioValueText = groupElement
+            .append('g')
+            .append("text")
+            .text("00")
+            .attr("dy", "-" + monitorDimensition.width * 0.002 + "em")
+            .style("font-size", (monitorDimensition.width * 0.006) + "em")
+            .attr("text-anchor", "middle")
+            .style("font-family", "Consolas")
+            .style("font-weight", "bold")
+            .style("fill", "green");
+        // const valueText = groupElement
+        //     .append('g')
+        //     .append("text")
+        //     .text("00")
+        //     .attr("dy", `-${monitorDimensition.width * 0.02}em`)
+        //     .style("font-size", `${(monitorDimensition.width * 0.002)}em`)
+        //     .attr("text-anchor", "middle")
+        //     .style("font-family","Consolas")
+        //     .style("font-weight","bold")
+        //     .style("fill","navy")
+        //     .attr('transform', "rotate(-90)");
+        var range = angle.maxAngle - angle.minAngle;
+        var minValue = chartOption.rangeMinValue;
+        var maxValue = chartOption.rangeMaxValue;
+        var needleRotateScale = d3.scaleLinear()
+            .range([0, 1])
+            .domain([minValue, maxValue]);
+        var chart = function (selection) {
+            selection.each(function (chartDatas) {
+                if (chartDatas.length <= 0)
+                    return;
+                var chartData = chartDatas[chartDatas.length - 1];
+                var arcRatioValue = angle.minAngle + (needleRotateScale(chartData.value) * range);
+                var chartDataRatio = needleRotateScale(chartData.value);
+                needle.transition()
+                    .duration(400)
+                    .attr('transform', "rotate(" + arcRatioValue + ")");
+                ratioValueText.transition().duration(400).text(Math.floor(needleRotateScale(chartData.value * 100)).toString() + "%");
+                var currentRatio = 0;
+                for (var i = 0; i < gaugeDrawData.length; i++) {
+                    currentRatio = currentRatio + gaugeDrawData[i].ratio;
+                    if (currentRatio >= chartDataRatio) {
+                        ratioValueText
+                            .style("fill", gaugeDrawData[i].color);
+                        break;
+                    }
+                }
+                // valueText
+                // .text(chartData.value.toString())
+                // .transition()
+                // .duration(400)
+                // .attr('transform', `rotate(${arcRatioValue})`);
+            });
+        };
+        return chart;
+    };
+    return DrawGaugeChart;
+}());
+exports.DrawGaugeChart = DrawGaugeChart;
 
 
 /***/ }),

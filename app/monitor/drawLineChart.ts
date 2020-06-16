@@ -15,6 +15,7 @@ export class DrawLineChart {
         bounds.append("g")
             .attr("class","xAxis")
             .style("transform", `translateY(${monitorDimensition.height}px)`)
+            
             .transition()
         bounds.append("g")
             .attr("class","yAxis")

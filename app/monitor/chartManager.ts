@@ -9,6 +9,7 @@ import { DrawLineChart } from "./drawLineChart";
 import { DrawCurveLineChart } from "./drawCurveLineChart";
 import { DrawLineGaugeChart } from "./drawLineGaugeChart";
 import { DrawScatterChart } from "./drawScatterChart";
+import { DrawGaugeChart } from "./drawGaugeChart";
 
 export class ChartManager {
     private wrapperElement : WrapperElement;
@@ -33,8 +34,10 @@ export class ChartManager {
     public clear(svgElement : any) {
         d3.selectAll(svgElement).remove();
     }
-    public buildGroupWrapper(baseSvgElement : any, monitorDimensition : MonitorDimensition) {
-        return baseSvgElement.append("g")
+    public buildGroupWrapper(baseSvgElement : any, aasId : number, monitorDimensition : MonitorDimensition) {
+        return baseSvgElement
+            .append("g")
+            .attr("aasId", aasId)
             .style("transform", `translate(${monitorDimensition.left}px, ${monitorDimensition.top}px)`)
     }
 
@@ -57,6 +60,8 @@ export class ChartManager {
                 return scatterObj.drawScatterChart(chartElement, chartOption, monitorDimensition);
                 break;
             case ChartType.Gauge:
+                let gaugeObj = new DrawGaugeChart();
+                return gaugeObj.drawGaugeChart(chartElement, chartOption, monitorDimensition);
                 break;
             case ChartType.Number:
                 break;
