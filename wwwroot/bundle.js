@@ -98,17 +98,37 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var d3 = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 var chartType_1 = __webpack_require__(/*! ./monitor/models/chartType */ "./app/monitor/models/chartType.ts");
-var drawChartManager_1 = __webpack_require__(/*! ./monitor/drawChartManager */ "./app/monitor/drawChartManager.ts");
-var util_1 = __webpack_require__(/*! ./monitor/util/util */ "./app/monitor/util/util.ts");
-var chartData_1 = __webpack_require__(/*! ./monitor/models/chartData */ "./app/monitor/models/chartData.ts");
+var chartManager_1 = __webpack_require__(/*! ./monitor/chartManager */ "./app/monitor/chartManager.ts");
 var monitorObject_1 = __webpack_require__(/*! ./monitor/models/monitorObject */ "./app/monitor/models/monitorObject.ts");
+var accessor_1 = __webpack_require__(/*! ./monitor/accessor */ "./app/monitor/accessor.ts");
 var Main = /** @class */ (function () {
     function Main() {
         this.monitoringObjects = [];
+        // private dataGeneratorXYvalues() : Array<ChartData> {
+        //     let lineDatas : Array<ChartData> = [];
+        //     let now = new Date();
+        //     for (var i=0; i < 100; i++) {
+        //         let data = new ChartData();
+        //         data.value = Util.randomNumber(0,255);
+        //         data.xAxis = new Date(now.getTime() - ((100 - i) * 500));
+        //         lineDatas.push(data);
+        //     }
+        //     return lineDatas;
+        // }
+        // private dataGeneratorNumbers() : Array<ChartData> {
+        //     let lineDatas : Array<ChartData> = [];
+        //     let now = new Date();
+        //     for (var i=0; i < 100; i++) {
+        //         let data = new ChartData();
+        //         data.value = Util.randomNumber(0,255);
+        //         lineDatas.push(data);
+        //     }
+        //     return lineDatas;
+        // }
     }
     Main.prototype.init = function (parentElement, width, height) {
         this.wrapperElement = parentElement;
-        this.drawChartManager = new drawChartManager_1.DrawChartManager(parentElement, width, height);
+        this.chartManager = new chartManager_1.ChartManager(parentElement, width, height);
         this.svgElement = d3.select(this.wrapperElement[0])
             .append("svg")
             .attr("width", width)
@@ -132,62 +152,27 @@ var Main = /** @class */ (function () {
         return chartType_1.ChartType.Line;
     };
     Main.prototype.clear = function () {
-        this.drawChartManager.clear(this.svgElement);
+        this.chartManager.clear(this.svgElement);
     };
-    Main.prototype.drawChart = function (aasId, chartTypeValue, chartOption, monitorDimensition) {
+    Main.prototype.drawChart = function (chartOption, monitorDimensition) {
         var monitorObject = new monitorObject_1.MonitorObject();
-        var chartType = this.getChartType(chartTypeValue);
-        var chart;
-        monitorObject.aasId = aasId;
+        chartOption.chartType = this.getChartType(chartOption.chartTypeValue);
+        chartOption.accessor = new accessor_1.Accessor();
+        monitorObject.aasId = chartOption.aasId;
         monitorObject.monitorDatas = [];
-        monitorObject.monitorData = new chartData_1.ChartData();
-        monitorObject.element = this.svgElement;
-        if (chartType === chartType_1.ChartType.Line || chartType === chartType_1.ChartType.CurveLine) {
-            monitorObject.d3DrawObject = this.drawChartManager.drawLineChart(monitorObject.element, chartType, chartOption, monitorDimensition);
-            this.monitoringObjects.push(monitorObject);
-            d3.select(monitorObject.element).datum(monitorObject.monitorDatas).call(monitorObject.d3DrawObject);
-        }
-        if (chartType === chartType_1.ChartType.Scatter) {
-            monitorObject.d3DrawObject = this.drawChartManager.drawScatterChart(monitorObject.element, chartType, chartOption, monitorDimensition);
-            this.monitoringObjects.push(monitorObject);
-            d3.select(monitorObject.element).datum(monitorObject.monitorDatas).call(monitorObject.d3DrawObject);
-        }
-        if (chartType === chartType_1.ChartType.LinearGauge || chartType === chartType_1.ChartType.Gauge || chartType === chartType_1.ChartType.Number) {
-            monitorObject.d3DrawObject = this.drawChartManager.drawLinearGauge(monitorObject.element, chartType, chartOption, monitorDimensition);
-            this.monitoringObjects.push(monitorObject);
-            d3.select(monitorObject.element).datum(monitorObject.monitorDatas).call(monitorObject.d3DrawObject);
-        }
+        monitorObject.element = this.chartManager.buildGroupWrapper(this.svgElement, monitorDimensition);
+        monitorObject.drawChartObject = this.chartManager.drawChart(monitorObject.element, chartOption, monitorDimensition);
+        this.monitoringObjects.push(monitorObject);
+        d3.select(monitorObject.element).datum(monitorObject.monitorDatas).call(monitorObject.drawChartObject);
     };
     Main.prototype.updateMonitor = function (aasId, chartData) {
         var currentObject = this.monitoringObjects.find(function (d) { return d.aasId === aasId; });
         if (currentObject === undefined)
             return;
-        currentObject.monitorData = chartData;
         currentObject.monitorDatas.push(chartData);
         if (currentObject.monitorDatas.length > 30)
             currentObject.monitorDatas.shift();
-        d3.select(currentObject.element).call(currentObject.d3DrawObject);
-    };
-    Main.prototype.dataGeneratorXYvalues = function () {
-        var lineDatas = [];
-        var now = new Date();
-        for (var i = 0; i < 100; i++) {
-            var data = new chartData_1.ChartData();
-            data.value = util_1.Util.randomNumber(0, 255);
-            data.xAxis = new Date(now.getTime() - ((100 - i) * 500));
-            lineDatas.push(data);
-        }
-        return lineDatas;
-    };
-    Main.prototype.dataGeneratorNumbers = function () {
-        var lineDatas = [];
-        var now = new Date();
-        for (var i = 0; i < 100; i++) {
-            var data = new chartData_1.ChartData();
-            data.value = util_1.Util.randomNumber(0, 255);
-            lineDatas.push(data);
-        }
-        return lineDatas;
+        d3.select(currentObject.element).call(currentObject.drawChartObject);
     };
     return Main;
 }());
@@ -196,45 +181,266 @@ window["Main"] = new Main();
 
 /***/ }),
 
-/***/ "./app/monitor/drawChartManager.ts":
-/*!*****************************************!*\
-  !*** ./app/monitor/drawChartManager.ts ***!
-  \*****************************************/
+/***/ "./app/monitor/accessor.ts":
+/*!*********************************!*\
+  !*** ./app/monitor/accessor.ts ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DrawChartManager = void 0;
+exports.Accessor = void 0;
+var Accessor = /** @class */ (function () {
+    function Accessor() {
+        this.yAccessor = function (d) { return d.yAxis; };
+        this.xAccessor = function (d) { return d.xAxis; };
+    }
+    return Accessor;
+}());
+exports.Accessor = Accessor;
+
+
+/***/ }),
+
+/***/ "./app/monitor/chartManager.ts":
+/*!*************************************!*\
+  !*** ./app/monitor/chartManager.ts ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ChartManager = void 0;
 var d3 = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
 var wrapperElement_1 = __webpack_require__(/*! ./models/wrapperElement */ "./app/monitor/models/wrapperElement.ts");
 var chartType_1 = __webpack_require__(/*! ./models/chartType */ "./app/monitor/models/chartType.ts");
-var DrawChartManager = /** @class */ (function () {
-    function DrawChartManager(wrapperElement, wrapperWidth, wrapperHeight) {
-        this.yAccessor = function (d) { return d.yAxis; };
-        this.xAccessor = function (d) { return d.xAxis; };
+var drawLineChart_1 = __webpack_require__(/*! ./drawLineChart */ "./app/monitor/drawLineChart.ts");
+var drawCurveLineChart_1 = __webpack_require__(/*! ./drawCurveLineChart */ "./app/monitor/drawCurveLineChart.ts");
+var drawLineGaugeChart_1 = __webpack_require__(/*! ./drawLineGaugeChart */ "./app/monitor/drawLineGaugeChart.ts");
+var drawScatterChart_1 = __webpack_require__(/*! ./drawScatterChart */ "./app/monitor/drawScatterChart.ts");
+var ChartManager = /** @class */ (function () {
+    function ChartManager(wrapperElement, wrapperWidth, wrapperHeight) {
         this.wrapperElement = new wrapperElement_1.WrapperElement();
         this.wrapperElement.elemenet = wrapperElement[0];
         this.wrapperElement.width = wrapperWidth;
         this.wrapperElement.height = wrapperHeight;
     }
-    DrawChartManager.prototype.init = function () {
+    ChartManager.prototype.init = function () {
         this.svgBaseElement = d3.select(this.wrapperElement.elemenet)
             .append("svg")
             .attr("width", this.wrapperElement.width)
             .attr("height", this.wrapperElement.height);
         return this.svgBaseElement;
     };
-    DrawChartManager.prototype.clear = function (svgElement) {
+    ChartManager.prototype.clear = function (svgElement) {
         d3.selectAll(svgElement).remove();
     };
-    DrawChartManager.prototype.buildGroupWrapper = function (baseSvgElement, monitorDimensition) {
+    ChartManager.prototype.buildGroupWrapper = function (baseSvgElement, monitorDimensition) {
         return baseSvgElement.append("g")
             .style("transform", "translate(" + monitorDimensition.left + "px, " + monitorDimensition.top + "px)");
     };
-    DrawChartManager.prototype.drawLinearGauge = function (baseSvgElement, chartType, chartOption, monitorDimensition) {
-        var bounds = this.buildGroupWrapper(baseSvgElement, monitorDimensition);
+    ChartManager.prototype.drawChart = function (chartElement, chartOption, monitorDimensition) {
+        switch (chartOption.chartType) {
+            case chartType_1.ChartType.Line:
+                var lineObj = new drawLineChart_1.DrawLineChart();
+                return lineObj.drawLineChart(chartElement, chartOption, monitorDimensition);
+                break;
+            case chartType_1.ChartType.CurveLine:
+                var curveLineObj = new drawCurveLineChart_1.DrawCurveLineChart();
+                return curveLineObj.drawLineChart(chartElement, chartOption, monitorDimensition);
+                break;
+            case chartType_1.ChartType.LinearGauge:
+                var linearGaugeObj = new drawLineGaugeChart_1.DrawLineGaugeChart();
+                return linearGaugeObj.drawLinearGauge(chartElement, chartOption, monitorDimensition);
+                break;
+            case chartType_1.ChartType.Scatter:
+                var scatterObj = new drawScatterChart_1.DrawScatterChart();
+                return scatterObj.drawScatterChart(chartElement, chartOption, monitorDimensition);
+                break;
+            case chartType_1.ChartType.Gauge:
+                break;
+            case chartType_1.ChartType.Number:
+                break;
+        }
+        // if (chartType === ChartType.Line || chartType === ChartType.CurveLine){
+        //     monitorObject.d3DrawObject = this.drawChartManager.drawChart(monitorObject.element, chartOption, monitorDimensition);
+        // }
+        // if (chartType === ChartType.Scatter) {
+        //     monitorObject.d3DrawObject = this.drawChartManager.drawChart(monitorObject.element, chartOption, monitorDimensition);
+        // }
+        // if (chartType === ChartType.LinearGauge || chartType === ChartType.Gauge || chartType === ChartType.Number) {
+        //     monitorObject.d3DrawObject = this.drawChartManager.drawChart(monitorObject.element,chartType,chartOption, monitorDimensition);
+        // }
+        return null;
+    };
+    return ChartManager;
+}());
+exports.ChartManager = ChartManager;
+
+
+/***/ }),
+
+/***/ "./app/monitor/drawCurveLineChart.ts":
+/*!*******************************************!*\
+  !*** ./app/monitor/drawCurveLineChart.ts ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DrawCurveLineChart = void 0;
+var d3 = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+var DrawCurveLineChart = /** @class */ (function () {
+    function DrawCurveLineChart() {
+    }
+    DrawCurveLineChart.prototype.drawLineChart = function (groupElement, chartOption, monitorDimensition) {
+        var bounds = groupElement;
+        bounds.append("path")
+            .attr("class", "line")
+            .attr("fill", "none")
+            .attr("stroke", chartOption.valueColorCode)
+            .attr("stroke-width", 1);
+        bounds.append("g")
+            .attr("class", "xAxis")
+            .style("transform", "translateY(" + monitorDimensition.height + "px)")
+            .transition();
+        bounds.append("g")
+            .attr("class", "yAxis");
+        var chart = function (selection) {
+            selection.each(function (datas) {
+                var xMin = d3.min(datas, function (chartData) { return chartData.xAxis; });
+                var xMax = d3.max(datas, function (chartData) { return chartData.xAxis; });
+                var xScale = d3.scaleTime()
+                    //.domain(<[Date,Date]>d3.extent(datas, this.xAccessor))
+                    .domain([xMin, xMax])
+                    .range([0, monitorDimensition.width]);
+                var yMin = d3.min(datas, function (chartData) { return chartData.yAxis; });
+                var yMax = d3.max(datas, function (chartData) { return chartData.yAxis; });
+                var yScale = d3.scaleLinear()
+                    .domain([yMin, yMax])
+                    .range([monitorDimensition.height, 0]);
+                if (chartOption.isShowYAsix) {
+                    var yAxisGenerator = d3.axisLeft(yScale);
+                    var yAxis = bounds.select(".yAxis")
+                        .call(yAxisGenerator);
+                }
+                if (chartOption.isShowXAsix) {
+                    var format = d3.timeFormat('%H:%M');
+                    var xAxisGenerator = d3.axisBottom(xScale).tickFormat(format);
+                    var xAxis = bounds.select(".xAxis")
+                        .call(xAxisGenerator);
+                }
+                var line = d3.line()
+                    .x(function (lineData) { return xScale(chartOption.accessor.xAccessor(lineData)); })
+                    .y(function (lineData) { return yScale(chartOption.accessor.yAccessor(lineData)); })
+                    .curve(d3.curveBasis);
+                var lineSelect = bounds.select(".line")
+                    .attr("transform", null)
+                    .datum(datas)
+                    .attr("d", line);
+            });
+        };
+        return chart;
+    };
+    return DrawCurveLineChart;
+}());
+exports.DrawCurveLineChart = DrawCurveLineChart;
+
+
+/***/ }),
+
+/***/ "./app/monitor/drawLineChart.ts":
+/*!**************************************!*\
+  !*** ./app/monitor/drawLineChart.ts ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DrawLineChart = void 0;
+var d3 = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+var DrawLineChart = /** @class */ (function () {
+    function DrawLineChart() {
+    }
+    DrawLineChart.prototype.drawLineChart = function (groupElement, chartOption, monitorDimensition) {
+        var bounds = groupElement;
+        bounds.append("path")
+            .attr("class", "line")
+            .attr("fill", "none")
+            .attr("stroke", chartOption.valueColorCode)
+            .attr("stroke-width", 1);
+        bounds.append("g")
+            .attr("class", "xAxis")
+            .style("transform", "translateY(" + monitorDimensition.height + "px)")
+            .transition();
+        bounds.append("g")
+            .attr("class", "yAxis");
+        var chart = function (selection) {
+            selection.each(function (datas) {
+                var xMin = d3.min(datas, function (chartData) { return chartData.xAxis; });
+                var xMax = d3.max(datas, function (chartData) { return chartData.xAxis; });
+                var xScale = d3.scaleTime()
+                    //.domain(<[Date,Date]>d3.extent(datas, this.xAccessor))
+                    .domain([xMin, xMax])
+                    .range([0, monitorDimensition.width]);
+                var yMin = d3.min(datas, function (chartData) { return chartData.yAxis; });
+                var yMax = d3.max(datas, function (chartData) { return chartData.yAxis; });
+                var yScale = d3.scaleLinear()
+                    .domain([yMin, yMax])
+                    .range([monitorDimensition.height, 0]);
+                if (chartOption.isShowYAsix) {
+                    var yAxisGenerator = d3.axisLeft(yScale);
+                    var yAxis = bounds.select(".yAxis")
+                        .call(yAxisGenerator);
+                }
+                if (chartOption.isShowXAsix) {
+                    var format = d3.timeFormat('%H:%M');
+                    var xAxisGenerator = d3.axisBottom(xScale).tickFormat(format);
+                    var xAxis = bounds.select(".xAxis")
+                        .call(xAxisGenerator);
+                }
+                var line = d3.line()
+                    .x(function (lineData) { return xScale(chartOption.accessor.xAccessor(lineData)); })
+                    .y(function (lineData) { return yScale(chartOption.accessor.yAccessor(lineData)); });
+                var lineSelect = bounds.select(".line")
+                    .attr("transform", null)
+                    .datum(datas)
+                    .attr("d", line);
+            });
+        };
+        return chart;
+    };
+    return DrawLineChart;
+}());
+exports.DrawLineChart = DrawLineChart;
+
+
+/***/ }),
+
+/***/ "./app/monitor/drawLineGaugeChart.ts":
+/*!*******************************************!*\
+  !*** ./app/monitor/drawLineGaugeChart.ts ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DrawLineGaugeChart = void 0;
+var DrawLineGaugeChart = /** @class */ (function () {
+    function DrawLineGaugeChart() {
+    }
+    DrawLineGaugeChart.prototype.drawLinearGauge = function (groupElement, chartOption, monitorDimensition) {
+        var bounds = groupElement;
         var linearGradient = bounds.append("defs").append("linearGradient")
             .attr("id", "mainGradient")
             .attr('x1', '0%')
@@ -305,9 +511,30 @@ var DrawChartManager = /** @class */ (function () {
         };
         return chart;
     };
-    DrawChartManager.prototype.drawScatterChart = function (baseSvgElement, chartType, chartOption, monitorDimensition) {
-        var _this = this;
-        var bounds = this.buildGroupWrapper(baseSvgElement, monitorDimensition);
+    return DrawLineGaugeChart;
+}());
+exports.DrawLineGaugeChart = DrawLineGaugeChart;
+
+
+/***/ }),
+
+/***/ "./app/monitor/drawScatterChart.ts":
+/*!*****************************************!*\
+  !*** ./app/monitor/drawScatterChart.ts ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DrawScatterChart = void 0;
+var d3 = __webpack_require__(/*! d3 */ "./node_modules/d3/index.js");
+var DrawScatterChart = /** @class */ (function () {
+    function DrawScatterChart() {
+    }
+    DrawScatterChart.prototype.drawScatterChart = function (groupElement, chartOption, monitorDimensition) {
+        var bounds = groupElement;
         bounds.append("g")
             .attr("class", "xAxis")
             .style("transform", "translateY(" + monitorDimensition.height + "px)")
@@ -317,10 +544,10 @@ var DrawChartManager = /** @class */ (function () {
         var chart = function (selection) {
             selection.each(function (datas) {
                 var yScale = d3.scaleLinear()
-                    .domain(d3.extent(datas, _this.yAccessor))
+                    .domain(d3.extent(datas, chartOption.accessor.yAccessor))
                     .range([monitorDimensition.height, 0]);
                 var xScale = d3.scaleTime()
-                    .domain(d3.extent(datas, _this.xAccessor))
+                    .domain(d3.extent(datas, chartOption.accessor.xAccessor))
                     .range([0, monitorDimensition.width]);
                 if (chartOption.isShowYAsix) {
                     var yAxisGenerator = d3.axisLeft(yScale);
@@ -337,8 +564,8 @@ var DrawChartManager = /** @class */ (function () {
                 bounds.selectAll("circle").remove();
                 datas.forEach(function (d) {
                     bounds.append("circle")
-                        .attr("cx", xScale(_this.xAccessor(d)))
-                        .attr("cy", yScale(_this.yAccessor(d)))
+                        .attr("cx", xScale(chartOption.accessor.xAccessor(d)))
+                        .attr("cy", yScale(chartOption.accessor.yAccessor(d)))
                         .attr("r", 2)
                         .attr("fill", chartOption.valueColorCode)
                         .attr("stroke", "darkgray")
@@ -348,82 +575,9 @@ var DrawChartManager = /** @class */ (function () {
         };
         return chart;
     };
-    DrawChartManager.prototype.drawLineChart = function (baseSvgElement, chartType, chartOption, monitorDimensition) {
-        var _this = this;
-        var bounds = this.buildGroupWrapper(baseSvgElement, monitorDimensition);
-        bounds.append("path")
-            .attr("class", "line")
-            .attr("fill", "none")
-            .attr("stroke", chartOption.valueColorCode)
-            .attr("stroke-width", 1);
-        bounds.append("g")
-            .attr("class", "xAxis")
-            .style("transform", "translateY(" + monitorDimensition.height + "px)")
-            .transition();
-        bounds.append("g")
-            .attr("class", "yAxis");
-        var chart = function (selection) {
-            selection.each(function (datas) {
-                var xMin = d3.min(datas, function (chartData) { return chartData.xAxis; });
-                var xMax = d3.max(datas, function (chartData) { return chartData.xAxis; });
-                var xScale = d3.scaleTime()
-                    //.domain(<[Date,Date]>d3.extent(datas, this.xAccessor))
-                    .domain([xMin, xMax])
-                    .range([0, monitorDimensition.width]);
-                var yMin = d3.min(datas, function (chartData) { return chartData.yAxis; });
-                var yMax = d3.max(datas, function (chartData) { return chartData.yAxis; });
-                var yScale = d3.scaleLinear()
-                    .domain([yMin, yMax])
-                    .range([monitorDimensition.height, 0]);
-                if (chartOption.isShowYAsix) {
-                    var yAxisGenerator = d3.axisLeft(yScale);
-                    var yAxis = bounds.select(".yAxis")
-                        .call(yAxisGenerator);
-                }
-                if (chartOption.isShowXAsix) {
-                    var format = d3.timeFormat('%H:%M');
-                    var xAxisGenerator = d3.axisBottom(xScale).tickFormat(format);
-                    var xAxis = bounds.select(".xAxis")
-                        .call(xAxisGenerator);
-                }
-                var line = d3.line()
-                    .x(function (lineData) { return xScale(_this.xAccessor(lineData)); })
-                    .y(function (lineData) { return yScale(_this.yAccessor(lineData)); });
-                if (chartType === chartType_1.ChartType.CurveLine) {
-                    line.curve(d3.curveBasis);
-                }
-                var lineSelect = bounds.select(".line")
-                    .attr("transform", null)
-                    .datum(datas)
-                    .attr("d", line);
-            });
-        };
-        return chart;
-    };
-    return DrawChartManager;
+    return DrawScatterChart;
 }());
-exports.DrawChartManager = DrawChartManager;
-
-
-/***/ }),
-
-/***/ "./app/monitor/models/chartData.ts":
-/*!*****************************************!*\
-  !*** ./app/monitor/models/chartData.ts ***!
-  \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChartData = void 0;
-var ChartData = /** @class */ (function () {
-    function ChartData() {
-    }
-    return ChartData;
-}());
-exports.ChartData = ChartData;
+exports.DrawScatterChart = DrawScatterChart;
 
 
 /***/ }),
@@ -491,31 +645,6 @@ var WrapperElement = /** @class */ (function () {
     return WrapperElement;
 }());
 exports.WrapperElement = WrapperElement;
-
-
-/***/ }),
-
-/***/ "./app/monitor/util/util.ts":
-/*!**********************************!*\
-  !*** ./app/monitor/util/util.ts ***!
-  \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Util = void 0;
-var Util = /** @class */ (function () {
-    function Util() {
-    }
-    Util.randomNumber = function (min, max) {
-        return Math.floor(Math.random() * max) + min;
-    };
-    return Util;
-}());
-exports.Util = Util;
-window["Util"] = Util;
 
 
 /***/ }),

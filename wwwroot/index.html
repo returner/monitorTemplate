@@ -48,7 +48,9 @@
 
     let rootElement = $("#chart_wrapper");
     window.Main.init(rootElement, 1024, 768);
-
+    function randomNumber(min, max) {
+        return Math.floor(Math.random() * max) + min;
+    }
     function onClear() {
         window.Main.clear();
     }
@@ -60,6 +62,8 @@
             height : Number($("#chartHeight").val())
         };
         let chartOption = {
+            chartTypeValue : $("#chartType option:selected").val(),
+            aasId : aasId++,
             valueColorCode : $("#colorCode").val(),
             isShowXAsix : $("#xAxisShow option:selected").val() == "true",
             isShowYAsix : $("#yAxisShow option:selected").val() == "true",
@@ -67,10 +71,10 @@
             rangeMaxValue : Number($("#rangeMax").val())
         };
 
-        window.Main.drawChart(aasId++, $("#chartType option:selected").val(),chartOption, chartDimensiton);
+        window.Main.drawChart(chartOption, chartDimensiton);
         window.setInterval(() => {
-            let id = Util.randomNumber(0, aasId);
-            let val = Util.randomNumber(0, Number($("#rangeMax").val()));
+            let id = randomNumber(0, aasId);
+            let val = randomNumber(0, Number($("#rangeMax").val()));
             let monitorValue = {
                 xAxis: new Date(),
                 yAxis: val,
@@ -81,8 +85,5 @@
             window.Main.updateMonitor(id, monitorValue);
         }, 500);
     }
-
-
-
     </script>
 </html>

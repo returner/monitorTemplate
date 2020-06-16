@@ -52,8 +52,8 @@ export class MonitorJsInterop {
         //monitorObject.element = this.monitorRootElement;
         //console.log(monitorObject.element);
         let drawD3 = new DrawD3();
-        monitorObject.d3DrawObject = drawD3.drawMonitoringItem(monitorItemOption.aasId, monitorObject.element, monitorItemOption.left, monitorItemOption.top);
-        d3.select(monitorObject.element).datum(monitorObject.monitorDatas).call(monitorObject.d3DrawObject);
+        monitorObject.drawChartObject = drawD3.drawMonitoringItem(monitorItemOption.aasId, monitorObject.element, monitorItemOption.left, monitorItemOption.top);
+        d3.select(monitorObject.element).datum(monitorObject.monitorDatas).call(monitorObject.drawChartObject);
 
         this.monitors.push(monitorObject);
         //this.monitorRootElement.appendChild(monitorObject.element);
