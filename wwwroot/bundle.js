@@ -221,7 +221,7 @@ var wrapperElement_1 = __webpack_require__(/*! ./models/wrapperElement */ "./app
 var chartType_1 = __webpack_require__(/*! ./models/chartType */ "./app/monitor/models/chartType.ts");
 var lineChart_1 = __webpack_require__(/*! ./drawChart/lineChart */ "./app/monitor/drawChart/lineChart.ts");
 var curveLineChart_1 = __webpack_require__(/*! ./drawChart/curveLineChart */ "./app/monitor/drawChart/curveLineChart.ts");
-var lineGaugeChart_1 = __webpack_require__(/*! ./drawChart/lineGaugeChart */ "./app/monitor/drawChart/lineGaugeChart.ts");
+var linearGaugeChart_1 = __webpack_require__(/*! ./drawChart/linearGaugeChart */ "./app/monitor/drawChart/linearGaugeChart.ts");
 var scatterChart_1 = __webpack_require__(/*! ./drawChart/scatterChart */ "./app/monitor/drawChart/scatterChart.ts");
 var gaugeChart_1 = __webpack_require__(/*! ./drawChart/gaugeChart */ "./app/monitor/drawChart/gaugeChart.ts");
 var lineChartOption_1 = __webpack_require__(/*! ./models/chartOption/lineChartOption */ "./app/monitor/models/chartOption/lineChartOption.ts");
@@ -281,7 +281,7 @@ var ChartManager = /** @class */ (function () {
                 linearGaugeOption.monitorDimensition = chartOption.monitorDimensition;
                 linearGaugeOption.rangeMaxValue = chartOption.rangeMaxValue;
                 linearGaugeOption.rangeMinValue = chartOption.rangeMinValue;
-                var linearGaugeObj = new lineGaugeChart_1.LineGaugeChart();
+                var linearGaugeObj = new linearGaugeChart_1.LinearGaugeChart();
                 return linearGaugeObj.drawLinearGauge(chartElement, linearGaugeOption);
                 break;
             case chartType_1.ChartType.Scatter:
@@ -301,6 +301,11 @@ var ChartManager = /** @class */ (function () {
                 gaugeOption.monitorDimensition = chartOption.monitorDimensition;
                 gaugeOption.rangeMaxValue = chartOption.rangeMaxValue;
                 gaugeOption.rangeMinValue = chartOption.rangeMinValue;
+                gaugeOption.gaugeRatioColors = [
+                    { ratio: 0.4, color: "rgb(91,171,133)" },
+                    { ratio: 0.3, color: "rgb(244,189,31)" },
+                    { ratio: 0.2, color: "rgb(189,37,38)" }
+                ];
                 var gaugeObj = new gaugeChart_1.GaugeChart();
                 return gaugeObj.drawGaugeChart(chartElement, gaugeOption);
                 break;
@@ -407,27 +412,11 @@ var GaugeChart = /** @class */ (function () {
     function GaugeChart() {
     }
     GaugeChart.prototype.drawGaugeChart = function (groupElement, chartOption) {
-        var data = [0.4, 0.3, 0.3];
-        var colors = ["green", "orange", "red"];
         var anglesRange = 0.5 * Math.PI;
         var radis = Math.min(chartOption.monitorDimensition.width, 2 * chartOption.monitorDimensition.height) / 2;
         var thickness = chartOption.monitorDimensition.width * 0.17;
-        var gaugeDrawData = [
-            {
-                ratio: 0.4,
-                color: "green"
-            },
-            {
-                ratio: 0.3,
-                color: "orange"
-            },
-            {
-                ratio: 0.3,
-                color: "red"
-            }
-        ];
         var pies = d3.pie()
-            .value(function (d) { return Number(d); })
+            .value(function (d) { return d.ratio; })
             .sort(null)
             .startAngle(anglesRange * -1)
             .endAngle(anglesRange);
@@ -436,10 +425,13 @@ var GaugeChart = /** @class */ (function () {
             .innerRadius(radis - thickness)
             .cornerRadius(5);
         groupElement.selectAll("path")
-            .data(pies(data))
+            .data(pies(chartOption.gaugeRatioColors))
             .enter()
             .append("path")
-            .attr("fill", function (d, i) { return colors[i]; })
+            .attr("fill", function (d, i) {
+            console.log(typeof (d));
+            return d.data.color;
+        })
             .attr("d", arc);
         var r = chartOption.monitorDimensition.width / 2;
         var pointerWidth = 10;
@@ -475,17 +467,6 @@ var GaugeChart = /** @class */ (function () {
             .style("font-family", "Consolas")
             .style("font-weight", "bold")
             .style("fill", "green");
-        // const valueText = groupElement
-        //     .append('g')
-        //     .append("text")
-        //     .text("00")
-        //     .attr("dy", `-${monitorDimensition.width * 0.02}em`)
-        //     .style("font-size", `${(monitorDimensition.width * 0.002)}em`)
-        //     .attr("text-anchor", "middle")
-        //     .style("font-family","Consolas")
-        //     .style("font-weight","bold")
-        //     .style("fill","navy")
-        //     .attr('transform', "rotate(-90)");
         var range = angle.maxAngle - angle.minAngle;
         var minValue = chartOption.rangeMinValue;
         var maxValue = chartOption.rangeMaxValue;
@@ -503,21 +484,19 @@ var GaugeChart = /** @class */ (function () {
                 needle.transition()
                     .duration(400)
                     .attr('transform', "rotate(" + arcRatioValue + ")");
-                ratioValueText.transition().duration(400).text(Math.floor(needleRotateScale(chartData.value * 100)).toString() + "%");
+                //ratioValueText.transition().duration(400).text(`${Math.floor(needleRotateScale(chartData.value * 100)).toString()}%`);
                 var currentRatio = 0;
-                for (var i = 0; i < gaugeDrawData.length; i++) {
-                    currentRatio = currentRatio + gaugeDrawData[i].ratio;
+                for (var i = 0; i < chartOption.gaugeRatioColors.length; i++) {
+                    currentRatio = currentRatio + chartOption.gaugeRatioColors[i].ratio;
                     if (currentRatio >= chartDataRatio) {
                         ratioValueText
-                            .style("fill", gaugeDrawData[i].color);
+                            .transition()
+                            .duration(400)
+                            .style("fill", chartOption.gaugeRatioColors[i].color)
+                            .text(Math.floor(needleRotateScale(chartData.value * 100)).toString() + "%");
                         break;
                     }
                 }
-                // valueText
-                // .text(chartData.value.toString())
-                // .transition()
-                // .duration(400)
-                // .attr('transform', `rotate(${arcRatioValue})`);
             });
         };
         return chart;
@@ -601,21 +580,21 @@ exports.LineChart = LineChart;
 
 /***/ }),
 
-/***/ "./app/monitor/drawChart/lineGaugeChart.ts":
-/*!*************************************************!*\
-  !*** ./app/monitor/drawChart/lineGaugeChart.ts ***!
-  \*************************************************/
+/***/ "./app/monitor/drawChart/linearGaugeChart.ts":
+/*!***************************************************!*\
+  !*** ./app/monitor/drawChart/linearGaugeChart.ts ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LineGaugeChart = void 0;
-var LineGaugeChart = /** @class */ (function () {
-    function LineGaugeChart() {
+exports.LinearGaugeChart = void 0;
+var LinearGaugeChart = /** @class */ (function () {
+    function LinearGaugeChart() {
     }
-    LineGaugeChart.prototype.drawLinearGauge = function (groupElement, chartOption) {
+    LinearGaugeChart.prototype.drawLinearGauge = function (groupElement, chartOption) {
         var bounds = groupElement;
         var linearGradient = bounds.append("defs").append("linearGradient")
             .attr("id", "mainGradient")
@@ -642,37 +621,41 @@ var LineGaugeChart = /** @class */ (function () {
             .attr('y', 0)
             .style('fill', 'url(#mainGradient)')
             .attr("width", chartOption.monitorDimensition.width)
-            .attr("height", chartOption.monitorDimensition.height);
+            .attr("height", chartOption.monitorDimensition.height)
+            .attr("rx", 6);
         var point = bounds.append('g')
-            .append('path');
-        var leftIndicator = bounds.append('g')
-            .append('text')
-            .text("Safe")
-            .attr("x", 0)
-            .attr("y", chartOption.monitorDimensition.height + 20);
-        var rightIndicator = bounds.append('g')
-            .append('text')
-            .attr('text-anchor', 'end')
-            .text("Warning")
-            .attr("x", chartOption.monitorDimensition.width)
-            .attr("y", chartOption.monitorDimensition.height + 20);
+            .append('path')
+            .attr("fill", "rgb(194,0,0)");
+        // const leftIndicator = bounds.append('g')
+        //                         .append('text')
+        //                         .text( "Safe" )
+        //                         .attr("x", 0)
+        //                         .attr("y", chartOption.monitorDimensition.height + 20)
+        // const rightIndicator = bounds.append('g')
+        //                         .append('text')
+        //                         .attr('text-anchor','end')
+        //                         .text( "Warning" )
+        //                         .attr("x", chartOption.monitorDimensition.width)
+        //                         .attr("y", chartOption.monitorDimensition.height + 20)
         var textPosition = bounds.append("g")
             .append("text")
+            .text("0%")
             .attr("class", "currentValue")
             .attr("font-family", "arial")
             .attr("fill", "darkblue")
             .attr("font-weight", "bold")
-            .attr("x", chartOption.monitorDimensition.width / 2 - 20 + (chartOption.monitorDimensition.width * 0.05))
-            .attr("y", chartOption.monitorDimensition.height / 2);
-        if (chartOption.monitorDimensition.height <= 50) {
-            textPosition.attr("font-size", "12px");
-        }
-        else if (chartOption.monitorDimensition.height > 50 && chartOption.monitorDimensition.height <= 100) {
-            textPosition.attr("font-size", "16px");
-        }
-        else {
-            textPosition.attr("font-size", "22px");
-        }
+            .attr("text-anchor", "middle")
+            .style("font-family", "Consolas")
+            .style("font-size", (chartOption.monitorDimensition.width * 0.006) + "em")
+            .attr("dy", "5em")
+            .attr("dy", "1.8em");
+        // if (chartOption.monitorDimensition.height <= 50) {
+        //     textPosition.attr("font-size", "12px");
+        // } else if (chartOption.monitorDimensition.height > 50 && chartOption.monitorDimensition.height <= 100){
+        //     textPosition.attr("font-size", "16px");
+        // } else {
+        //     textPosition.attr("font-size", "22px");
+        // }
         var chart = function (selection) {
             selection.each(function (chartDatas) {
                 if (chartDatas.length <= 0)
@@ -687,9 +670,9 @@ var LineGaugeChart = /** @class */ (function () {
         };
         return chart;
     };
-    return LineGaugeChart;
+    return LinearGaugeChart;
 }());
-exports.LineGaugeChart = LineGaugeChart;
+exports.LinearGaugeChart = LinearGaugeChart;
 
 
 /***/ }),
@@ -852,14 +835,21 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NumberTypeChartOption = void 0;
+exports.NumberTypeChartOption = exports.NumberTypeChartExpressionValueType = void 0;
 var chartOption_1 = __webpack_require__(/*! ./chartOption */ "./app/monitor/models/chartOption/base/chartOption.ts");
+var NumberTypeChartExpressionValueType;
+(function (NumberTypeChartExpressionValueType) {
+    NumberTypeChartExpressionValueType[NumberTypeChartExpressionValueType["none"] = 0] = "none";
+    NumberTypeChartExpressionValueType[NumberTypeChartExpressionValueType["originValue"] = 1] = "originValue";
+    NumberTypeChartExpressionValueType[NumberTypeChartExpressionValueType["ratioValue"] = 2] = "ratioValue";
+})(NumberTypeChartExpressionValueType = exports.NumberTypeChartExpressionValueType || (exports.NumberTypeChartExpressionValueType = {}));
 var NumberTypeChartOption = /** @class */ (function (_super) {
     __extends(NumberTypeChartOption, _super);
     function NumberTypeChartOption() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.rangeMinValue = 0;
         _this.rangeMaxValue = 100;
+        _this.expressionValueType = NumberTypeChartExpressionValueType.ratioValue;
         return _this;
     }
     return NumberTypeChartOption;
@@ -934,7 +924,9 @@ var numberTypeChartOption_1 = __webpack_require__(/*! ./base/numberTypeChartOpti
 var GaugeChartOption = /** @class */ (function (_super) {
     __extends(GaugeChartOption, _super);
     function GaugeChartOption() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.gaugeRatioColors = [];
+        return _this;
     }
     return GaugeChartOption;
 }(numberTypeChartOption_1.NumberTypeChartOption));
@@ -1008,7 +1000,9 @@ var numberTypeChartOption_1 = __webpack_require__(/*! ./base/numberTypeChartOpti
 var LinearGaugeChartOption = /** @class */ (function (_super) {
     __extends(LinearGaugeChartOption, _super);
     function LinearGaugeChartOption() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.gaugeRatioColors = [];
+        return _this;
     }
     return LinearGaugeChartOption;
 }(numberTypeChartOption_1.NumberTypeChartOption));

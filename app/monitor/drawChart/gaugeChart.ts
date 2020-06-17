@@ -1,50 +1,37 @@
 import { ChartData } from "../models/chartData";
 import d3 = require("d3");
 import { GaugeChartOption } from "../models/chartOption/gaugeChartOption";
+import { GaugeRatioColor } from "../models/chartOption/gaugeRatioColor";
 
 
 
 export class GaugeChart {
     public drawGaugeChart(groupElement : any, chartOption : GaugeChartOption) {
-        
-         let data = [0.4, 0.3, 0.3]
-         var colors = ["green", "orange", "red"]
         var anglesRange = 0.5 * Math.PI
         var radis = Math.min(chartOption.monitorDimensition.width, 2 * chartOption.monitorDimensition.height) / 2
         var thickness = chartOption.monitorDimensition.width * 0.17
-        let gaugeDrawData = [ 
-            {
-                ratio : 0.4,
-                color : "green"
-            }, 
-            {
-                ratio : 0.3,
-                color : "orange"
-            },
-            {
-                ratio : 0.3,
-                color : "red"
-            }
-        ];
     
-    var pies = d3.pie()
-    	.value( d => {return Number(d)})
-    	.sort(null)
-    	.startAngle( anglesRange * -1)
-    	.endAngle( anglesRange)
-    
-		var arc = d3.arc()
-    	.outerRadius(radis)
-    	.innerRadius(radis - thickness)
-        .cornerRadius(5)
-    groupElement.selectAll("path")
-    .data(pies(data))
-    .enter()
-    .append("path")
-    .attr("fill", (d, i) => colors[i])
-    .attr("d", arc)
+        var pies = d3.pie<GaugeRatioColor>()
+            .value((d : GaugeRatioColor) => {return d.ratio})
+            .sort(null)
+            .startAngle( anglesRange * -1)
+            .endAngle( anglesRange)
         
-    var r =  chartOption.monitorDimensition.width / 2;
+        var arc = d3.arc()
+            .outerRadius(radis)
+            .innerRadius(radis - thickness)
+            .cornerRadius(5)
+        groupElement.selectAll("path")
+        .data(pies(chartOption.gaugeRatioColors))
+        .enter()
+        .append("path")
+        .attr("fill", (d : any, i) => { 
+            console.log(typeof(d))
+            return d.data.color;
+        })
+        .attr("d", arc)
+        
+        var r =  chartOption.monitorDimensition.width / 2;
         var pointerWidth = 10;
 		var pointerTailLength = 5;
         var pointerHeadLengthPercent = 0.9;
@@ -81,19 +68,8 @@ export class GaugeChart {
             .attr("text-anchor", "middle")
             .style("font-family","Consolas")
             .style("font-weight","bold")
-            .style("fill","green")
+            .style("fill",chartOption.gaugeRatioColors[0].color)
 
-        // const valueText = groupElement
-        //     .append('g')
-        //     .append("text")
-        //     .text("00")
-        //     .attr("dy", `-${monitorDimensition.width * 0.02}em`)
-        //     .style("font-size", `${(monitorDimensition.width * 0.002)}em`)
-        //     .attr("text-anchor", "middle")
-        //     .style("font-family","Consolas")
-        //     .style("font-weight","bold")
-        //     .style("fill","navy")
-        //     .attr('transform', "rotate(-90)");
         let range = angle.maxAngle - angle.minAngle;
         let minValue = chartOption.rangeMinValue;
 		let maxValue = chartOption.rangeMaxValue;
@@ -113,22 +89,19 @@ export class GaugeChart {
                     .duration(400)
                     .attr('transform', `rotate(${arcRatioValue})`);
                 
-                ratioValueText.transition().duration(400).text(`${Math.floor(needleRotateScale(chartData.value * 100)).toString()}%`);
+                //ratioValueText.transition().duration(400).text(`${Math.floor(needleRotateScale(chartData.value * 100)).toString()}%`);
                 let currentRatio = 0;
-                for(var i =0; i < gaugeDrawData.length; i++){
-                    currentRatio = currentRatio + gaugeDrawData[i].ratio
+                for(var i =0; i < chartOption.gaugeRatioColors.length; i++){
+                    currentRatio = currentRatio + chartOption.gaugeRatioColors[i].ratio
                     if (currentRatio >= chartDataRatio) {
                         ratioValueText
-                        .style("fill", gaugeDrawData[i].color);
+                        .transition()
+                        .duration(400)
+                        .style("fill", chartOption.gaugeRatioColors[i].color)
+                        .text(`${Math.floor(needleRotateScale(chartData.value * 100)).toString()}%`)
                         break;
                     }
                 }
-
-                // valueText
-                // .text(chartData.value.toString())
-                // .transition()
-                // .duration(400)
-                // .attr('transform', `rotate(${arcRatioValue})`);
            });
         }
 

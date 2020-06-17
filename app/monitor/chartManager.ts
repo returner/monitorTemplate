@@ -4,7 +4,7 @@ import {ChartType} from "./models/chartType"
 import { MonitorDimensition } from "./models/monitorDimensition";
 import { LineChart } from "./drawChart/lineChart";
 import { CurveLineChart } from "./drawChart/curveLineChart";
-import { LineGaugeChart } from "./drawChart/lineGaugeChart";
+import { LinearGaugeChart } from "./drawChart/linearGaugeChart";
 import { ScatterChart } from "./drawChart/scatterChart";
 import { GaugeChart } from "./drawChart/gaugeChart";
 import { LineChartOption } from "./models/chartOption/lineChartOption";
@@ -73,7 +73,7 @@ export class ChartManager {
                 linearGaugeOption.monitorDimensition = chartOption.monitorDimensition;
                 linearGaugeOption.rangeMaxValue = chartOption.rangeMaxValue;
                 linearGaugeOption.rangeMinValue = chartOption.rangeMinValue;
-                let linearGaugeObj = new LineGaugeChart();
+                let linearGaugeObj = new LinearGaugeChart();
                 return linearGaugeObj.drawLinearGauge(chartElement, linearGaugeOption);
                 break;
             case ChartType.Scatter:
@@ -93,6 +93,11 @@ export class ChartManager {
                 gaugeOption.monitorDimensition = chartOption.monitorDimensition;
                 gaugeOption.rangeMaxValue = chartOption.rangeMaxValue;
                 gaugeOption.rangeMinValue = chartOption.rangeMinValue;
+                gaugeOption.gaugeRatioColors = [
+                    {ratio : 0.4, color : "rgb(91,171,133)"},
+                    {ratio : 0.3, color : "rgb(244,189,31)"},
+                    {ratio : 0.2, color : "rgb(189,37,38)"}
+                ];
                 let gaugeObj = new GaugeChart();
                 return gaugeObj.drawGaugeChart(chartElement, gaugeOption);
                 break;
