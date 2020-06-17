@@ -1,6 +1,7 @@
-import { NumberTypeChartOption } from "./base/numberTypeChartOption";
-import { GaugeRatioColor } from "./gaugeRatioColor";
 
-export class GaugeChartOption extends NumberTypeChartOption {
-    public gaugeRatioColors : Array<GaugeRatioColor> = [];
+import { GaugeRatioColor } from "./gaugeRatioColor";
+import { LinearTypeChartOption } from "./base/linearTypeChartOption";
+
+export class GaugeChartOption extends LinearTypeChartOption {
+
 }

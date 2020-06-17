@@ -2,6 +2,9 @@ import { ChartData } from "../models/chartData";
 import d3 = require("d3");
 import { GaugeChartOption } from "../models/chartOption/gaugeChartOption";
 import { GaugeRatioColor } from "../models/chartOption/gaugeRatioColor";
+import { ScaleHelper } from "../util/scaleHelper";
+import { LinearValueExpressionType } from "../models/chartOption/linearValueExpressionType";
+
 
 
 
@@ -20,15 +23,12 @@ export class GaugeChart {
         var arc = d3.arc()
             .outerRadius(radis)
             .innerRadius(radis - thickness)
-            .cornerRadius(5)
+            .cornerRadius(chartOption.monitorDimensition.width * 0.01)
         groupElement.selectAll("path")
         .data(pies(chartOption.gaugeRatioColors))
         .enter()
         .append("path")
-        .attr("fill", (d : any, i) => { 
-            console.log(typeof(d))
-            return d.data.color;
-        })
+        .attr("fill", (d : any, i) => d.data.color)
         .attr("d", arc)
         
         var r =  chartOption.monitorDimensition.width / 2;
@@ -71,34 +71,40 @@ export class GaugeChart {
             .style("fill",chartOption.gaugeRatioColors[0].color)
 
         let range = angle.maxAngle - angle.minAngle;
-        let minValue = chartOption.rangeMinValue;
-		let maxValue = chartOption.rangeMaxValue;
-        const needleRotateScale = d3.scaleLinear()
-        .range([0,1])
-        .domain([minValue, maxValue]);
+        // let minValue = chartOption.rangeMinValue;
+		// let maxValue = chartOption.rangeMaxValue;
+        // const needleRotateScale = d3.scaleLinear()
+        // .range([0,1])
+        // .domain([minValue, maxValue]);
 
         const chart = (selection) => {
             selection.each((chartDatas: Array<ChartData>) => {
                 if (chartDatas.length <= 0)
                 return;
+                let scaleHelper = new ScaleHelper();
                 let chartData = chartDatas[chartDatas.length - 1];
-                var arcRatioValue = angle.minAngle + (needleRotateScale(chartData.value) * range);
-                var chartDataRatio = needleRotateScale(chartData.value);
-                console.log(`chartData:${chartData.value}, arcRatioValue:${arcRatioValue}, chartDataRatio:${chartDataRatio}`)
+                let chartDataScaleValue = scaleHelper.scaleMinMax(chartOption.rangeMinValue, chartOption.rangeMaxValue, chartData.value);
+                var arcRatioValue = angle.minAngle + (chartDataScaleValue * range);
+                
                 needle.transition()
                     .duration(400)
                     .attr('transform', `rotate(${arcRatioValue})`);
                 
-                //ratioValueText.transition().duration(400).text(`${Math.floor(needleRotateScale(chartData.value * 100)).toString()}%`);
+                let text = "";
+                if (chartOption.expressionValueType == LinearValueExpressionType.OriginValue)
+                    text = chartData.value.toFixed(chartOption.expressionFixedDigits).toString();
+                else if (chartOption.expressionValueType == LinearValueExpressionType.RatioValue)
+                    text = `${scaleHelper.scaleMinMax(chartOption.rangeMinValue, chartOption.rangeMaxValue,chartData.value * 100).toFixed(chartOption.expressionFixedDigits).toString()}%`;
+                
                 let currentRatio = 0;
                 for(var i =0; i < chartOption.gaugeRatioColors.length; i++){
                     currentRatio = currentRatio + chartOption.gaugeRatioColors[i].ratio
-                    if (currentRatio >= chartDataRatio) {
+                    if (currentRatio >= chartDataScaleValue) {
                         ratioValueText
                         .transition()
                         .duration(400)
                         .style("fill", chartOption.gaugeRatioColors[i].color)
-                        .text(`${Math.floor(needleRotateScale(chartData.value * 100)).toString()}%`)
+                        .text(text)
                         break;
                     }
                 }

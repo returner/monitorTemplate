@@ -13,6 +13,7 @@ import { CurveLineChartOption } from "./models/chartOption/curveLineChartOption"
 import { LinearGaugeChartOption } from "./models/chartOption/linearGaugeChartOption";
 import { ScatterChartOption } from "./models/chartOption/scatterChartOption";
 import { GaugeChartOption } from "./models/chartOption/gaugeChartOption";
+import { LinearValueExpressionType } from "./models/chartOption/linearValueExpressionType";
 
 export class ChartManager {
     private wrapperElement : WrapperElement;
@@ -93,11 +94,7 @@ export class ChartManager {
                 gaugeOption.monitorDimensition = chartOption.monitorDimensition;
                 gaugeOption.rangeMaxValue = chartOption.rangeMaxValue;
                 gaugeOption.rangeMinValue = chartOption.rangeMinValue;
-                gaugeOption.gaugeRatioColors = [
-                    {ratio : 0.4, color : "rgb(91,171,133)"},
-                    {ratio : 0.3, color : "rgb(244,189,31)"},
-                    {ratio : 0.2, color : "rgb(189,37,38)"}
-                ];
+                gaugeOption.expressionValueType = LinearValueExpressionType.OriginValue;
                 let gaugeObj = new GaugeChart();
                 return gaugeObj.drawGaugeChart(chartElement, gaugeOption);
                 break;

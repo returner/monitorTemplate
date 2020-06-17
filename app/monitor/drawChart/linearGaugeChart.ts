@@ -2,11 +2,16 @@
 
 import { ChartData } from "../models/chartData";
 import { LinearGaugeChartOption } from "../models/chartOption/linearGaugeChartOption";
+import { LinearValueExpressionType } from "../models/chartOption/linearValueExpressionType";
+import { ScaleHelper } from "../util/scaleHelper";
+import { values } from "d3";
+
 
 export class LinearGaugeChart {
     public drawLinearGauge(groupElement : any, chartOption : LinearGaugeChartOption) {
         const bounds = groupElement;
-        
+        console.log(chartOption.gaugeRatioColors);
+
         const linearGradient = bounds.append("defs").append("linearGradient")
             .attr("id", "mainGradient")
             .attr('x1','0%')
@@ -15,20 +20,28 @@ export class LinearGaugeChart {
             .attr('y2','0%')
             .attr('spreadMethod', 'pad');
 
-        linearGradient.append("stop")
-        .attr('offset','0%')
-        .attr('stop-color','green')
-        .attr('stop-opacity', '1');
+        // linearGradient.append("stop")
+        // .attr('offset','0%')
+        // .attr('stop-color','green')
+        // .attr('stop-opacity', '1');
 
-        linearGradient.append("stop")
-        .attr('offset','60%')
-        .attr("stop-color", "orange")
-        .attr('stop-opacity', '1');
+        // linearGradient.append("stop")
+        // .attr('offset','60%')
+        // .attr("stop-color", "orange")
+        // .attr('stop-opacity', '1');
 
-        linearGradient.append("stop")
-        .attr('offset','100%')
-        .attr("stop-color", "red")
-        .attr('stop-opacity', '1');
+        // linearGradient.append("stop")
+        // .attr('offset','100%')
+        // .attr("stop-color", "red")
+        // .attr('stop-opacity', '1');
+        let gradientOffset = 0
+        for(var i=0; i < chartOption.gaugeRatioColors.length; i++) {
+            linearGradient.append("stop")
+            .attr('offset',`${gradientOffset * 10}%`)
+            .attr("stop-color", `${chartOption.gaugeRatioColors[i].color}`)
+            .attr('stop-opacity', '1');
+            gradientOffset += chartOption.gaugeRatioColors[i].ratio * 10;
+        }
 
         const linearBar = bounds.append('g')
                         .append('rect')
@@ -42,38 +55,20 @@ export class LinearGaugeChart {
                         .append('path')
                         .attr("fill","rgb(194,0,0)")
      
-        // const leftIndicator = bounds.append('g')
-        //                         .append('text')
-        //                         .text( "Safe" )
-        //                         .attr("x", 0)
-        //                         .attr("y", chartOption.monitorDimensition.height + 20)
-     
-        // const rightIndicator = bounds.append('g')
-        //                         .append('text')
-        //                         .attr('text-anchor','end')
-        //                         .text( "Warning" )
-        //                         .attr("x", chartOption.monitorDimensition.width)
-        //                         .attr("y", chartOption.monitorDimensition.height + 20)
         const textPosition = bounds.append("g")
         .append("text")
-        .text("0%")
+        .text("")
         .attr("class","currentValue")
-        .attr("font-family", "arial")
+        .attr("x", chartOption.monitorDimensition.width / 2)
+        .attr("y", chartOption.monitorDimensition.height / 2)
         .attr("fill", "darkblue")
-        .attr("font-weight","bold")
+        .style("font-family", "arial")
+        .style("font-weight","bold")
         .attr("text-anchor", "middle")
+        .attr("alignment-baseline","central")
         .style("font-family","Consolas")
         .style("font-size", `${(chartOption.monitorDimensition.width * 0.006)}em`)
-        .attr("dy", `5em`)
-        .attr("dy", `1.8em`)
         
-        // if (chartOption.monitorDimensition.height <= 50) {
-        //     textPosition.attr("font-size", "12px");
-        // } else if (chartOption.monitorDimensition.height > 50 && chartOption.monitorDimensition.height <= 100){
-        //     textPosition.attr("font-size", "16px");
-        // } else {
-        //     textPosition.attr("font-size", "22px");
-        // }
 
         const chart = (selection) => {
             selection.each((chartDatas : Array<ChartData>) => {
@@ -83,8 +78,14 @@ export class LinearGaugeChart {
                 let textPos = chartOption.monitorDimensition.height + 20
                 let pointSize = 8;
                 let pointPos = chartOption.monitorDimensition.width * (chartData.value / chartOption.rangeMaxValue);
+                let scaleHelper = new ScaleHelper();
+                let positionText = "";
+                if (chartOption.expressionValueType == LinearValueExpressionType.OriginValue)
+                    positionText = chartData.value.toFixed(chartOption.expressionFixedDigits).toString();
+                else if (chartOption.expressionValueType == LinearValueExpressionType.RatioValue)
+                    positionText = (scaleHelper.scaleMinMax(chartOption.rangeMinValue, chartOption.rangeMaxValue, chartData.value) * 100).toFixed(chartOption.expressionFixedDigits) + "%";
 
-                textPosition.text(chartData.value);
+                textPosition.text(positionText);
                 point.transition().attr('d','M'+pointPos+' '+(chartOption.monitorDimensition.height+5)+', L'+(pointPos-pointSize)+' '+textPos+', L'+(pointPos+pointSize)+' '+textPos+' Z');
              });
         }

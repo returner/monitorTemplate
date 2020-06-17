@@ -1,6 +1,7 @@
-import { NumberTypeChartOption } from "./base/numberTypeChartOption";
+import { ChartOption } from "./base/chartOption";
 
 
-export class NumberChartOption extends NumberTypeChartOption {
+
+export class NumberChartOption extends ChartOption {
     
 }
