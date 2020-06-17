@@ -1,18 +1,17 @@
-import { ChartData } from "./models/chartData";
-import { ChartOption } from "./models/chartOption";
-import { MonitorDimensition } from "./models/monitorDimensition";
+import { ChartData } from "../models/chartData";
 import d3 = require("d3");
-import { DefaultArcObject, group } from "d3";
+import { GaugeChartOption } from "../models/chartOption/gaugeChartOption";
 
 
-export class DrawGaugeChart {
-    public drawGaugeChart(groupElement : any, chartOption : ChartOption, monitorDimensition : MonitorDimensition) {
+
+export class GaugeChart {
+    public drawGaugeChart(groupElement : any, chartOption : GaugeChartOption) {
         
          let data = [0.4, 0.3, 0.3]
          var colors = ["green", "orange", "red"]
         var anglesRange = 0.5 * Math.PI
-        var radis = Math.min(monitorDimensition.width, 2 * monitorDimensition.height) / 2
-        var thickness = monitorDimensition.width * 0.17
+        var radis = Math.min(chartOption.monitorDimensition.width, 2 * chartOption.monitorDimensition.height) / 2
+        var thickness = chartOption.monitorDimensition.width * 0.17
         let gaugeDrawData = [ 
             {
                 ratio : 0.4,
@@ -45,7 +44,7 @@ export class DrawGaugeChart {
     .attr("fill", (d, i) => colors[i])
     .attr("d", arc)
         
-    var r =  monitorDimensition.width / 2;
+    var r =  chartOption.monitorDimensition.width / 2;
         var pointerWidth = 10;
 		var pointerTailLength = 5;
         var pointerHeadLengthPercent = 0.9;
@@ -77,8 +76,8 @@ export class DrawGaugeChart {
             .append('g')
             .append("text")
             .text("00")
-            .attr("dy", `-${monitorDimensition.width * 0.002}em`)
-            .style("font-size", `${(monitorDimensition.width * 0.006)}em`)
+            .attr("dy", `-${chartOption.monitorDimensition.width * 0.002}em`)
+            .style("font-size", `${(chartOption.monitorDimensition.width * 0.006)}em`)
             .attr("text-anchor", "middle")
             .style("font-family","Consolas")
             .style("font-weight","bold")
@@ -109,7 +108,7 @@ export class DrawGaugeChart {
                 let chartData = chartDatas[chartDatas.length - 1];
                 var arcRatioValue = angle.minAngle + (needleRotateScale(chartData.value) * range);
                 var chartDataRatio = needleRotateScale(chartData.value);
-
+                console.log(`chartData:${chartData.value}, arcRatioValue:${arcRatioValue}, chartDataRatio:${chartDataRatio}`)
                 needle.transition()
                     .duration(400)
                     .attr('transform', `rotate(${arcRatioValue})`);

@@ -1,10 +1,10 @@
-import { ChartType } from "./models/chartType";
-import { ChartOption } from "./models/chartOption";
-import { MonitorDimensition } from "./models/monitorDimensition";
-import { ChartData } from "./models/chartData";
 
-export class DrawLineGaugeChart {
-    public drawLinearGauge(groupElement : any, chartOption : ChartOption, monitorDimensition : MonitorDimensition) {
+
+import { ChartData } from "../models/chartData";
+import { LinearGaugeChartOption } from "../models/chartOption/linearGaugeChartOption";
+
+export class LineGaugeChart {
+    public drawLinearGauge(groupElement : any, chartOption : LinearGaugeChartOption) {
         const bounds = groupElement;
         
         const linearGradient = bounds.append("defs").append("linearGradient")
@@ -35,8 +35,8 @@ export class DrawLineGaugeChart {
                         .attr('x', 0 )
                         .attr('y', 0 )
                         .style('fill','url(#mainGradient)')
-                        .attr("width", monitorDimensition.width)
-                        .attr("height", monitorDimensition.height)
+                        .attr("width", chartOption.monitorDimensition.width)
+                        .attr("height", chartOption.monitorDimensition.height)
         const point = bounds.append('g')
                         .append('path');
      
@@ -44,14 +44,14 @@ export class DrawLineGaugeChart {
                                 .append('text')
                                 .text( "Safe" )
                                 .attr("x", 0)
-                                .attr("y", monitorDimensition.height + 20)
+                                .attr("y", chartOption.monitorDimensition.height + 20)
      
         const rightIndicator = bounds.append('g')
                                 .append('text')
                                 .attr('text-anchor','end')
                                 .text( "Warning" )
-                                .attr("x", monitorDimensition.width)
-                                .attr("y", monitorDimensition.height + 20)
+                                .attr("x", chartOption.monitorDimensition.width)
+                                .attr("y", chartOption.monitorDimensition.height + 20)
         const textPosition = bounds.append("g")
         .append("text")
         .attr("class","currentValue")
@@ -59,11 +59,11 @@ export class DrawLineGaugeChart {
         
         .attr("fill", "darkblue")
         .attr("font-weight","bold")
-        .attr("x",monitorDimensition.width/2 - 20 + (monitorDimensition.width * 0.05))
-        .attr("y",monitorDimensition.height/2);
-        if (monitorDimensition.height <= 50) {
+        .attr("x",chartOption.monitorDimensition.width/2 - 20 + (chartOption.monitorDimensition.width * 0.05))
+        .attr("y",chartOption.monitorDimensition.height/2);
+        if (chartOption.monitorDimensition.height <= 50) {
             textPosition.attr("font-size", "12px");
-        } else if (monitorDimensition.height > 50 && monitorDimensition.height <= 100){
+        } else if (chartOption.monitorDimensition.height > 50 && chartOption.monitorDimensition.height <= 100){
             textPosition.attr("font-size", "16px");
         } else {
             textPosition.attr("font-size", "22px");
@@ -74,11 +74,11 @@ export class DrawLineGaugeChart {
                 if (chartDatas.length <= 0)
                 return;
                 let chartData = chartDatas[chartDatas.length - 1];
-                let textPos = monitorDimensition.height + 20
+                let textPos = chartOption.monitorDimensition.height + 20
                 let pointSize = 8;
-                let pointPos = monitorDimensition.width * (chartData.value / chartOption.rangeMaxValue);
+                let pointPos = chartOption.monitorDimensition.width * (chartData.value / chartOption.rangeMaxValue);
                 textPosition.text(chartData.value);
-                point.transition().attr('d','M'+pointPos+' '+(monitorDimensition.height+5)+', L'+(pointPos-pointSize)+' '+textPos+', L'+(pointPos+pointSize)+' '+textPos+' Z');
+                point.transition().attr('d','M'+pointPos+' '+(chartOption.monitorDimensition.height+5)+', L'+(pointPos-pointSize)+' '+textPos+', L'+(pointPos+pointSize)+' '+textPos+' Z');
              });
         }
 

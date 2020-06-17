@@ -2,13 +2,11 @@
 import * as  d3 from "d3";
 import {ChartType} from "./monitor/models/chartType"
 import {ChartManager} from "./monitor/chartManager"
-import {Util} from "./monitor/util/util"
-import {MonitorDimensition} from "./monitor/models/monitorDimensition"
-import { ChartData } from "./monitor/models/chartData";
-import { ChartOption } from "./monitor/models/chartOption";
-import { MonitorObject } from "./monitor/models/monitorObject";
-import { Accessor } from "./monitor/accessor";
 
+import { ChartData } from "./monitor/models/chartData";
+import { MonitorObject } from "./monitor/models/monitorObject";
+
+import { v1 as uuid } from 'uuid'
 class Main {
     private wrapperElement : HTMLDivElement;
     private chartManager : ChartManager;
@@ -46,21 +44,23 @@ class Main {
         this.chartManager.clear(this.svgElement);
     }
     
-    public drawChart(chartOption : ChartOption, monitorDimensition : MonitorDimensition){
+    public drawChart(chartOption : any){
         let monitorObject = new MonitorObject();
-        chartOption.chartType = this.getChartType(chartOption.chartTypeValue);
-        chartOption.accessor = new Accessor();
-        monitorObject.aasId = chartOption.aasId;
+        monitorObject.monitorElementInstanceId = chartOption.monitorElementInstanceId;
         monitorObject.monitorDatas = [];
-        monitorObject.element = this.chartManager.buildGroupWrapper(this.svgElement, monitorObject.aasId, monitorDimensition);
-
-        monitorObject.drawChartObject = this.chartManager.drawChart(monitorObject.element, chartOption, monitorDimensition);
+        monitorObject.element = this.chartManager.buildGroupWrapper(this.svgElement, monitorObject.monitorElementInstanceId, chartOption);
+        monitorObject.drawChartObject = this.chartManager.drawChart(monitorObject.element, chartOption);
+        
         this.monitoringObjects.push(monitorObject);
         d3.select(monitorObject.element).datum(monitorObject.monitorDatas).call(monitorObject.drawChartObject);
     }
 
-    public updateMonitor(aasId : number, chartData : ChartData) {
-        let currentObject = this.monitoringObjects.find(d => d.aasId === aasId);
+    public getMonitorElementInstanceId() : string {
+        return uuid();
+    }
+
+    public updateMonitor(monitorElementInstanceId : string, chartData : ChartData) {
+        let currentObject = this.monitoringObjects.find(d => d.monitorElementInstanceId === monitorElementInstanceId);
         if (currentObject === undefined)
         return;
         

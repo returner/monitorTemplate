@@ -1,40 +1,43 @@
-import { ChartType } from "./models/chartType";
-import { ChartOption } from "./models/chartOption";
-import { MonitorDimensition } from "./models/monitorDimensition";
-import { ChartData } from "./models/chartData";
-import d3 = require("d3");
 
-export class DrawCurveLineChart {
-    public drawLineChart(groupElement : any, chartOption : ChartOption, monitorDimensition : MonitorDimensition){
+import { ChartData } from "../models/chartData";
+import d3 = require("d3");
+import { LineChartOption } from "../models/chartOption/lineChartOption";
+import { GraphTypeAccessor } from "../accessor/graphTypeAccessor";
+
+export class LineChart {
+    public drawLineChart(groupElement : any, chartOption : LineChartOption){
         const bounds = groupElement;
         bounds.append("path")
             .attr("class", "line")
             .attr("fill", "none")
-            .attr("stroke", chartOption.valueColorCode)
+            .attr("stroke", chartOption.expressionColor)
             .attr("stroke-width", 1)
         bounds.append("g")
             .attr("class","xAxis")
-            .style("transform", `translateY(${monitorDimensition.height}px)`)
+            .style("transform", `translateY(${chartOption.monitorDimensition.height}px)`)
+            
             .transition()
         bounds.append("g")
             .attr("class","yAxis")
 
         const chart = (selection) => {
             selection.each((datas: Array<ChartData>) => {
+                let accessor = new GraphTypeAccessor();
+                
                 let xMin = d3.min(datas, (chartData: ChartData) => { return chartData.xAxis });
                 let xMax = d3.max(datas, (chartData: ChartData) => { return chartData.xAxis });
 
                 const xScale = d3.scaleTime()
                 //.domain(<[Date,Date]>d3.extent(datas, this.xAccessor))
                 .domain([xMin!,xMax!])
-                .range([0, monitorDimensition.width]);
+                .range([0, chartOption.monitorDimensition.width]);
 
                 let yMin = d3.min(datas, (chartData: ChartData) => { return chartData.yAxis });
                 let yMax = d3.max(datas, (chartData: ChartData) => { return chartData.yAxis });
 
                 const yScale = d3.scaleLinear()
                 .domain([yMin!,yMax!])
-                .range([monitorDimensition.height, 0])
+                .range([chartOption.monitorDimensition.height, 0])
            
             
             if (chartOption.isShowYAsix) {
@@ -52,10 +55,9 @@ export class DrawCurveLineChart {
             }
             
             let line = d3.line<ChartData>()
-                .x((lineData: ChartData) => xScale(chartOption.accessor.xAccessor(lineData)))
-                .y((lineData: ChartData) => yScale(chartOption.accessor.yAccessor(lineData)))
-                .curve(d3.curveBasis)
-            
+                .x((lineData: ChartData) => xScale(accessor.xAccessor(lineData)))
+                .y((lineData: ChartData) => yScale(accessor.yAccessor(lineData)))
+
             let lineSelect = bounds.select(".line")
                 .attr("transform", null)
                 .datum(datas)

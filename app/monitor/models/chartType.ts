@@ -5,5 +5,6 @@ export enum ChartType {
     Scatter,
     Gauge,
     Number,
-    LinearGauge
+    LinearGauge,
+    Device
 }

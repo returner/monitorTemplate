@@ -1,6 +1,6 @@
-import { ChartData } from "./models/chartData";
+import { ChartData } from "../models/chartData";
 
-export class Accessor {
+export class GraphTypeAccessor {
     public yAccessor = (d : ChartData) => {return d.yAxis};
     public xAccessor = (d : ChartData) => {return d.xAxis};
 }
