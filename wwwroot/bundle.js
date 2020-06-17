@@ -234,6 +234,8 @@ var gaugeChartOption_1 = __webpack_require__(/*! ./models/chartOption/gaugeChart
 var linearValueExpressionType_1 = __webpack_require__(/*! ./models/chartOption/linearValueExpressionType */ "./app/monitor/models/chartOption/linearValueExpressionType.ts");
 var deviceChartOption_1 = __webpack_require__(/*! ./models/chartOption/deviceChartOption */ "./app/monitor/models/chartOption/deviceChartOption.ts");
 var deviceChart_1 = __webpack_require__(/*! ./drawChart/deviceChart */ "./app/monitor/drawChart/deviceChart.ts");
+var numberChartOption_1 = __webpack_require__(/*! ./models/chartOption/numberChartOption */ "./app/monitor/models/chartOption/numberChartOption.ts");
+var numberChart_1 = __webpack_require__(/*! ./drawChart/numberChart */ "./app/monitor/drawChart/numberChart.ts");
 var ChartManager = /** @class */ (function () {
     function ChartManager(wrapperElement, wrapperWidth, wrapperHeight) {
         this.wrapperElement = new wrapperElement_1.WrapperElement();
@@ -311,6 +313,16 @@ var ChartManager = /** @class */ (function () {
                 return gaugeObj.drawGaugeChart(chartElement, gaugeOption);
                 break;
             case chartType_1.ChartType.Number:
+                var numberOption = new numberChartOption_1.NumberChartOption();
+                numberOption.monitorElementInstanceId = chartOption.monitorElementInstanceId;
+                numberOption.expressionColor = chartOption.expressionColor;
+                numberOption.monitorDimensition = chartOption.monitorDimensition;
+                numberOption.rangeMaxValue = chartOption.rangeMaxValue;
+                numberOption.rangeMinValue = chartOption.rangeMinValue;
+                numberOption.expressionFixedDigits = 0;
+                numberOption.expressionValueType = linearValueExpressionType_1.LinearValueExpressionType.OriginValue;
+                var numberObj = new numberChart_1.NumberChart();
+                return numberObj.drawNumberChart(chartElement, numberOption);
                 break;
             case chartType_1.ChartType.Device:
                 var deviceOption = new deviceChartOption_1.DeviceChartOption();
@@ -847,6 +859,97 @@ exports.LinearGaugeChart = LinearGaugeChart;
 
 /***/ }),
 
+/***/ "./app/monitor/drawChart/numberChart.ts":
+/*!**********************************************!*\
+  !*** ./app/monitor/drawChart/numberChart.ts ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NumberChart = void 0;
+var linearValueExpressionType_1 = __webpack_require__(/*! ../models/chartOption/linearValueExpressionType */ "./app/monitor/models/chartOption/linearValueExpressionType.ts");
+var scaleHelper_1 = __webpack_require__(/*! ../util/scaleHelper */ "./app/monitor/util/scaleHelper.ts");
+var NumberChart = /** @class */ (function () {
+    function NumberChart() {
+    }
+    NumberChart.prototype.drawNumberChart = function (groupElement, chartOption) {
+        var bounds = groupElement;
+        var linearGradient = bounds.append("defs").append("linearGradient")
+            .attr("id", "mainGradient")
+            .attr('x1', '0%')
+            .attr('y1', '0%')
+            .attr('x2', '100%')
+            .attr('y2', '0%')
+            .attr('spreadMethod', 'pad');
+        var gradientOffset = 0;
+        for (var i = 0; i < chartOption.gaugeRatioColors.length; i++) {
+            linearGradient.append("stop")
+                .attr('offset', gradientOffset * 10 + "%")
+                .attr("stop-color", "" + chartOption.gaugeRatioColors[i].color)
+                .attr('stop-opacity', '1');
+            gradientOffset += chartOption.gaugeRatioColors[i].ratio * 10;
+        }
+        var linearBar = bounds.append('g')
+            .append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .style('fill', 'url(#mainGradient)')
+            .attr("width", chartOption.monitorDimensition.width)
+            .attr("height", chartOption.monitorDimensition.height)
+            .attr("rx", 6);
+        var wrapperRect = bounds.append("g")
+            .append("rect")
+            .attr('x', chartOption.monitorDimensition.width / 6)
+            .attr('y', chartOption.monitorDimensition.height / 6)
+            .style('fill', 'lightgray')
+            .attr("width", chartOption.monitorDimensition.width - (chartOption.monitorDimensition.width / 3))
+            .attr("height", chartOption.monitorDimensition.height - (chartOption.monitorDimensition.height / 3))
+            .style("stroke", "darkgray")
+            .style("stroke-width", 2)
+            .style("opacity", 0.5)
+            .attr("rx", 6);
+        var textPosition = bounds.append("g")
+            .append("text")
+            .text("")
+            .attr("class", "currentValue")
+            .attr("x", chartOption.monitorDimensition.width / 2)
+            .attr("y", chartOption.monitorDimensition.height / 2)
+            .attr("fill", "darkblue")
+            .style("font-family", "arial")
+            .style("font-weight", "bold")
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "central")
+            .style("font-family", "Consolas")
+            .style("font-size", (chartOption.monitorDimensition.width * 0.012) + "em");
+        var chart = function (selection) {
+            selection.each(function (chartDatas) {
+                if (chartDatas.length <= 0)
+                    return;
+                var chartData = chartDatas[chartDatas.length - 1];
+                var textPos = chartOption.monitorDimensition.height + 20;
+                var pointSize = 8;
+                var pointPos = chartOption.monitorDimensition.width * (chartData.value / chartOption.rangeMaxValue);
+                var scaleHelper = new scaleHelper_1.ScaleHelper();
+                var positionText = "";
+                if (chartOption.expressionValueType == linearValueExpressionType_1.LinearValueExpressionType.OriginValue)
+                    positionText = chartData.value.toFixed(chartOption.expressionFixedDigits).toString();
+                else if (chartOption.expressionValueType == linearValueExpressionType_1.LinearValueExpressionType.RatioValue)
+                    positionText = (scaleHelper.scaleMinMax(chartOption.rangeMinValue, chartOption.rangeMaxValue, chartData.value) * 100).toFixed(chartOption.expressionFixedDigits) + "%";
+                textPosition.text(positionText);
+            });
+        };
+        return chart;
+    };
+    return NumberChart;
+}());
+exports.NumberChart = NumberChart;
+
+
+/***/ }),
+
 /***/ "./app/monitor/drawChart/scatterChart.ts":
 /*!***********************************************!*\
   !*** ./app/monitor/drawChart/scatterChart.ts ***!
@@ -1271,6 +1374,43 @@ var LinearValueExpressionType;
     LinearValueExpressionType[LinearValueExpressionType["OriginValue"] = 1] = "OriginValue";
     LinearValueExpressionType[LinearValueExpressionType["RatioValue"] = 2] = "RatioValue";
 })(LinearValueExpressionType = exports.LinearValueExpressionType || (exports.LinearValueExpressionType = {}));
+
+
+/***/ }),
+
+/***/ "./app/monitor/models/chartOption/numberChartOption.ts":
+/*!*************************************************************!*\
+  !*** ./app/monitor/models/chartOption/numberChartOption.ts ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NumberChartOption = void 0;
+var linearTypeChartOption_1 = __webpack_require__(/*! ./base/linearTypeChartOption */ "./app/monitor/models/chartOption/base/linearTypeChartOption.ts");
+var NumberChartOption = /** @class */ (function (_super) {
+    __extends(NumberChartOption, _super);
+    function NumberChartOption() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return NumberChartOption;
+}(linearTypeChartOption_1.LinearTypeChartOption));
+exports.NumberChartOption = NumberChartOption;
 
 
 /***/ }),

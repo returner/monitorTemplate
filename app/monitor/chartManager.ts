@@ -16,6 +16,8 @@ import { GaugeChartOption } from "./models/chartOption/gaugeChartOption";
 import { LinearValueExpressionType } from "./models/chartOption/linearValueExpressionType";
 import { DeviceChartOption } from "./models/chartOption/deviceChartOption";
 import { DeviceChart } from "./drawChart/deviceChart";
+import { NumberChartOption } from "./models/chartOption/numberChartOption";
+import { NumberChart } from "./drawChart/numberChart";
 
 export class ChartManager {
     private wrapperElement : WrapperElement;
@@ -101,6 +103,16 @@ export class ChartManager {
                 return gaugeObj.drawGaugeChart(chartElement, gaugeOption);
                 break;
             case ChartType.Number:
+                let numberOption = new NumberChartOption();
+                numberOption.monitorElementInstanceId = chartOption.monitorElementInstanceId;
+                numberOption.expressionColor = chartOption.expressionColor;
+                numberOption.monitorDimensition = chartOption.monitorDimensition;
+                numberOption.rangeMaxValue = chartOption.rangeMaxValue;
+                numberOption.rangeMinValue = chartOption.rangeMinValue;
+                numberOption.expressionFixedDigits = 0;
+                numberOption.expressionValueType = LinearValueExpressionType.OriginValue;
+                let numberObj = new NumberChart();
+                return numberObj.drawNumberChart(chartElement, numberOption);
                 break;
             case ChartType.Device:
                 let deviceOption = new DeviceChartOption();
