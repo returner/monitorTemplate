@@ -36,6 +36,8 @@ class Main {
                 return ChartType.Number;
             case "linearGauge":
                 return ChartType.LinearGauge;
+            case "device":
+                return ChartType.Device;
         }
         return ChartType.Line;
     }

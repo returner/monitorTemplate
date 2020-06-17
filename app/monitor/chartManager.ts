@@ -14,6 +14,8 @@ import { LinearGaugeChartOption } from "./models/chartOption/linearGaugeChartOpt
 import { ScatterChartOption } from "./models/chartOption/scatterChartOption";
 import { GaugeChartOption } from "./models/chartOption/gaugeChartOption";
 import { LinearValueExpressionType } from "./models/chartOption/linearValueExpressionType";
+import { DeviceChartOption } from "./models/chartOption/deviceChartOption";
+import { DeviceChart } from "./drawChart/deviceChart";
 
 export class ChartManager {
     private wrapperElement : WrapperElement;
@@ -101,6 +103,14 @@ export class ChartManager {
             case ChartType.Number:
                 break;
             case ChartType.Device:
+                let deviceOption = new DeviceChartOption();
+                deviceOption.monitorElementInstanceId = chartOption.monitorElementInstanceId;
+                deviceOption.expressionColor = chartOption.expressionColor;
+                deviceOption.monitorDimensition = chartOption.monitorDimensition;
+                deviceOption.monitorDimensition.width = 179;
+                deviceOption.monitorDimensition.height = 145;
+                let deviceObj = new DeviceChart();
+                return deviceObj.drawDeviceChart(chartElement, deviceOption);
                 break;
         }
         return null;
