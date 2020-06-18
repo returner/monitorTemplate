@@ -47,6 +47,38 @@ class Main {
     }
     
     public drawChart(chartOption : any){
+        
+        switch(chartOption.chartType) {
+            case ChartType.Line:
+                chartOption.monitorDimensition.marginLeft = 30;
+                chartOption.monitorDimensition.marginTop = 0; 
+                break;
+            case ChartType.CurveLine:
+                chartOption.monitorDimensition.marginLeft = 30;
+                chartOption.monitorDimensition.marginTop = 0; 
+                break;
+            case ChartType.Scatter:
+                chartOption.monitorDimensition.marginLeft = 30;
+                chartOption.monitorDimensition.marginTop = 0; 
+                break;
+            case ChartType.LinearGauge:
+                chartOption.monitorDimensition.marginLeft = 0;
+                chartOption.monitorDimensition.marginTop = 0; 
+                break;
+            case ChartType.Gauge:
+                chartOption.monitorDimensition.marginLeft = chartOption.monitorDimensition.width/2;
+                chartOption.monitorDimensition.marginTop = chartOption.monitorDimensition.width/2; 
+                break;
+            case ChartType.Number:
+                chartOption.monitorDimensition.marginLeft = 0;
+                chartOption.monitorDimensition.marginTop = 0; 
+                break;
+            case ChartType.Device:
+                chartOption.monitorDimensition.marginLeft = 0;
+                chartOption.monitorDimensition.marginTop = 0; 
+                break;
+        }
+
         let monitorObject = new MonitorObject();
         monitorObject.monitorElementInstanceId = chartOption.monitorElementInstanceId;
         monitorObject.monitorDatas = [];

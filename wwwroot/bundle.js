@@ -157,6 +157,36 @@ var Main = /** @class */ (function () {
         this.chartManager.clear(this.svgElement);
     };
     Main.prototype.drawChart = function (chartOption) {
+        switch (chartOption.chartType) {
+            case chartType_1.ChartType.Line:
+                chartOption.monitorDimensition.marginLeft = 30;
+                chartOption.monitorDimensition.marginTop = 0;
+                break;
+            case chartType_1.ChartType.CurveLine:
+                chartOption.monitorDimensition.marginLeft = 30;
+                chartOption.monitorDimensition.marginTop = 0;
+                break;
+            case chartType_1.ChartType.Scatter:
+                chartOption.monitorDimensition.marginLeft = 30;
+                chartOption.monitorDimensition.marginTop = 0;
+                break;
+            case chartType_1.ChartType.LinearGauge:
+                chartOption.monitorDimensition.marginLeft = 0;
+                chartOption.monitorDimensition.marginTop = 0;
+                break;
+            case chartType_1.ChartType.Gauge:
+                chartOption.monitorDimensition.marginLeft = chartOption.monitorDimensition.width / 2;
+                chartOption.monitorDimensition.marginTop = chartOption.monitorDimensition.width / 2;
+                break;
+            case chartType_1.ChartType.Number:
+                chartOption.monitorDimensition.marginLeft = 0;
+                chartOption.monitorDimensition.marginTop = 0;
+                break;
+            case chartType_1.ChartType.Device:
+                chartOption.monitorDimensition.marginLeft = 0;
+                chartOption.monitorDimensition.marginTop = 0;
+                break;
+        }
         var monitorObject = new monitorObject_1.MonitorObject();
         monitorObject.monitorElementInstanceId = chartOption.monitorElementInstanceId;
         monitorObject.monitorDatas = [];
@@ -257,7 +287,7 @@ var ChartManager = /** @class */ (function () {
         return baseSvgElement
             .append("g")
             .attr("monitorElementInstanceId", monitorElementInstanceId)
-            .style("transform", "translate(" + chartOption.monitorDimensition.left + "px, " + chartOption.monitorDimensition.top + "px)");
+            .style("transform", "translate(" + (chartOption.monitorDimensition.left + chartOption.monitorDimensition.marginLeft) + "px, " + (chartOption.monitorDimensition.top + chartOption.monitorDimensition.marginTop) + "px)");
     };
     ChartManager.prototype.drawChart = function (chartElement, chartOption) {
         switch (chartOption.chartType) {

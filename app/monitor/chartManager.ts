@@ -46,7 +46,7 @@ export class ChartManager {
         return baseSvgElement
             .append("g")
             .attr("monitorElementInstanceId", monitorElementInstanceId)
-            .style("transform", `translate(${chartOption.monitorDimensition.left}px, ${chartOption.monitorDimensition.top}px)`)
+            .style("transform", `translate(${chartOption.monitorDimensition.left + chartOption.monitorDimensition.marginLeft}px, ${chartOption.monitorDimensition.top + chartOption.monitorDimensition.marginTop}px)`)
     }
 
     public drawChart(chartElement : any, chartOption : any) : any|null {
@@ -58,6 +58,7 @@ export class ChartManager {
                 lineOption.isShowXAsix = chartOption.isShowXAsix;
                 lineOption.isShowYAsix = chartOption.isShowYAsix;
                 lineOption.monitorDimensition = chartOption.monitorDimensition;
+                
                 let lineObj = new LineChart();
                 return lineObj.drawLineChart(chartElement, lineOption);
                 break;
