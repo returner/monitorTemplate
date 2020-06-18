@@ -366,7 +366,7 @@ var CurveLineChart = /** @class */ (function () {
             .attr("class", "line")
             .attr("fill", "none")
             .attr("stroke", chartOption.expressionColor)
-            .attr("stroke-width", 1);
+            .attr("stroke-width", chartOption.lineTickness);
         bounds.append("g")
             .attr("class", "xAxis")
             .style("transform", "translateY(" + chartOption.monitorDimensition.height + "px)")
@@ -534,7 +534,10 @@ var DeviceChart = /** @class */ (function (_super) {
             .attr("width", 179)
             .attr("height", 23)
             .style("transform", "translate(3px,120px)")
-            .attr("class", "line");
+            .attr("class", "line")
+            .attr("fill", "none")
+            .attr("stroke-width", chartOption.lineTickness)
+            .attr("stroke", chartOption.lineColor);
         var chart = function (selection) {
             selection.each(function (datas) {
                 console.log("w:" + chartOption.monitorDimensition.width + " / h:" + chartOption.monitorDimensition.height);
@@ -555,10 +558,7 @@ var DeviceChart = /** @class */ (function (_super) {
                     .y(function (lineData) { return yScale(accessor.yAccessor(lineData)); });
                 var lineSelect = bounds.select(".line")
                     .datum(datas)
-                    .attr("d", line)
-                    .attr("fill", "none")
-                    .attr("stroke-width", 1)
-                    .attr("stroke", chartOption.expressionColor);
+                    .attr("d", line);
                 var circle = bounds.selectAll(".circle")
                     .data(datas)
                     .attr("fill", function (d) {
@@ -712,7 +712,7 @@ var LineChart = /** @class */ (function () {
             .attr("class", "line")
             .attr("fill", "none")
             .attr("stroke", chartOption.expressionColor)
-            .attr("stroke-width", 1);
+            .attr("stroke-width", chartOption.lineTickness);
         bounds.append("g")
             .attr("class", "xAxis")
             .style("transform", "translateY(" + chartOption.monitorDimensition.height + "px)")
@@ -1198,7 +1198,9 @@ var graphTypeChartOption_1 = __webpack_require__(/*! ./base/graphTypeChartOption
 var CurveLineChartOption = /** @class */ (function (_super) {
     __extends(CurveLineChartOption, _super);
     function CurveLineChartOption() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.lineTickness = 2;
+        return _this;
     }
     return CurveLineChartOption;
 }(graphTypeChartOption_1.GraphTypeChartOption));
@@ -1237,6 +1239,8 @@ var DeviceChartOption = /** @class */ (function (_super) {
     function DeviceChartOption() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.imageUrl = "./tprbceip.png";
+        _this.lineTickness = 1;
+        _this.lineColor = "darkblue";
         return _this;
     }
     return DeviceChartOption;
@@ -1311,7 +1315,9 @@ var graphTypeChartOption_1 = __webpack_require__(/*! ./base/graphTypeChartOption
 var LineChartOption = /** @class */ (function (_super) {
     __extends(LineChartOption, _super);
     function LineChartOption() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.lineTickness = 2;
+        return _this;
     }
     return LineChartOption;
 }(graphTypeChartOption_1.GraphTypeChartOption));

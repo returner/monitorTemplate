@@ -11,7 +11,7 @@ export class LineChart {
             .attr("class", "line")
             .attr("fill", "none")
             .attr("stroke", chartOption.expressionColor)
-            .attr("stroke-width", 1)
+            .attr("stroke-width", chartOption.lineTickness)
         bounds.append("g")
             .attr("class","xAxis")
             .style("transform", `translateY(${chartOption.monitorDimensition.height}px)`)

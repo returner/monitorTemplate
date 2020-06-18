@@ -97,6 +97,9 @@ export class DeviceChart extends DeviceChartOption {
             .attr("height", 23)
             .style("transform", `translate(3px,120px)`)
             .attr("class", "line")
+            .attr("fill", "none")
+            .attr("stroke-width", chartOption.lineTickness)
+            .attr("stroke", chartOption.lineColor);
         
 
         const chart = (selection) => {
@@ -123,9 +126,7 @@ export class DeviceChart extends DeviceChartOption {
                 let lineSelect = bounds.select(".line")
                     .datum(datas)
                     .attr("d", line)
-                    .attr("fill", "none")
-                    .attr("stroke-width", 1)
-                    .attr("stroke", chartOption.expressionColor);
+                    
 
                 let circle = bounds.selectAll(".circle")
                     .data(datas)
